@@ -37,8 +37,9 @@ With the commands below, build the image and create the container that will run 
 `--influxMeasurement <influxdb measurement>`
 # Strava
 Create the container that retrieves data from Strava with the command below. This container only retrieves data from Strava and sends it to the mqtt broker. It does not need to persist data. The commands must be run from the directory that contains `Dockerfile` and `requirements.txt`
->`docker build -t strava .`
-`docker run -d \`
+> `docker build -t strava .`
+
+> `docker run -d \`
 `--name=strava \`
 `-e TZ=Europe/Stockholm \`
 `-v /<path on host to directory containing file with tokens>:/secrets \`
