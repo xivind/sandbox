@@ -54,7 +54,7 @@ Create the container that retrieves data from Strava with the command below. Thi
 `--mqttClientID <mosquitto clientID>`
 
 Strava requires authentication with OAuth2. It looks complicated, but is fairly straight forward to configure if you follow [Stravas step-by-step guide](https://developers.strava.com/docs/getting-started/#oauth). In the script we are using here, the tokens are handled through a json file, which must look as following. [Thanks to Pauls Geek Dad Blog](https://pdwhomeautomation.blogspot.com/2016/01/fitbit-api-access-using-oauth20-and.html) for pointing us in the right direction with python and OAuth2 also.
->`content of json-file`
+>`{"clientId": "", "clientSecret": "", "accessToken": "", "refreshToken": ""}`
 
 
 # Fitbit
