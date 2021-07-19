@@ -74,12 +74,26 @@ Create the container that retrieves data from Fitbit with the command below. Thi
 `--mqttClientID <mosquitto clientID>`
 
 Fitbit requires authentication with OAuth2. In the script we are using here, the tokens are handled through a json file, which must look as following. 
->`{"AccToken": "", "RefToken": "", "ClientId": "", "ClientSecret": ""}`
+> `{"AccToken": "", "RefToken": "", "ClientId": "", "ClientSecret": ""}`
 
 [Thanks to Pauls Geek Dad Blog](https://pdwhomeautomation.blogspot.com/2016/01/fitbit-api-access-using-oauth20-and.html) for pointing us in the right direction with python and OAuth2 also.
 
 # Nilu
+Create the container that retrieves data from Nilu with the command below. This container only retrieves data from Nilu and sends it to the mqtt broker. It does not need to persist data. The commands must be run from the directory that contains `Dockerfile` and `requirements.txt`
+> `docker build -t nilu .`
 
+> `docker run -d \`  
+`--name=nilu \`  
+`-e TZ=Europe/Stockholm \`  
+`--restart unless-stopped \` 
+`nilu \`  
+`./send-nilu.py \`  
+`--debug no \`  
+`--userAgent <email address of entity using the API> \`  
+`--mqttHost <mosquitto host> \`  
+`--mqttPort 1883 \`  
+`--mqttTopic <mosquitto topic> \`  
+`--mqttClientID <mosquitto clientID>`
 # Yr
 
 # Grafana
