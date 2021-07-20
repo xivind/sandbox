@@ -79,7 +79,7 @@ Fitbit requires authentication with OAuth2. In the script we are using here, the
 [Thanks to Pauls Geek Dad Blog](https://pdwhomeautomation.blogspot.com/2016/01/fitbit-api-access-using-oauth20-and.html) for pointing us in the right direction with python and OAuth2 also.
 
 # Nilu
-Create the container that retrieves data from Nilu with the command below. This container only retrieves data from Nilu and sends it to the mqtt broker. It does not need to persist data. The commands must be run from the directory that contains `Dockerfile` and `requirements.txt`
+Create the container that retrieves data from [nilu.no](https://www.nilu.no) with the command below. This container only retrieves data from [nilu.no](https://www.nilu.no) and sends it to the mqtt broker. It does not need to persist data. The commands must be run from the directory that contains `Dockerfile` and `requirements.txt`
 > `docker build -t nilu .`
 
 > `docker run -d \`  
@@ -95,6 +95,21 @@ Create the container that retrieves data from Nilu with the command below. This 
 `--mqttTopic <mosquitto topic> \`  
 `--mqttClientID <mosquitto clientID>`
 # Yr
+Create the container that retrieves data from [yr.no](https://www.yr.no) with the command below. This container only retrieves data from [yr.no](https://www.yr.no) and sends it to the mqtt broker. It does not need to persist data. The commands must be run from the directory that contains `Dockerfile` and `requirements.txt`
+> `docker build -t yr .`
+
+> `docker run -d \`  
+`--name=yr \`  
+`-e TZ=Europe/Stockholm \`  
+`--restart unless-stopped \` 
+`yr \`  
+`./send-yr.py \`  
+`--debug no \`  
+`--userAgent <email address of entity using the API> \`  
+`--mqttHost <mosquitto host> \`  
+`--mqttPort 1883 \`  
+`--mqttTopic <mosquitto topic> \`  
+`--mqttClientID <mosquitto clientID>`
 
 # Grafana
 See grafana shares, pictures
