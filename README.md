@@ -110,7 +110,20 @@ Create the container that retrieves data from [yr.no](https://www.yr.no) with th
 `--mqttPort 1883 \`  
 `--mqttTopic <mosquitto topic> \`  
 `--mqttClientID <mosquitto clientID>`
-
+# Blinkt
+This scipt uses the [ledstrip](https://shop.pimoroni.com/products/blinkt) from [Pimoroni](https://shop.pimoroni.com/) to display system status. To make it run in the background, create a service file with the content below and place it in `/etc/systemd/system` Use `sudo systemctl enable <name of sercice file>` to make it run on system startup
+>`[Unit]`  
+`Description=Control status LEDs for RPI4s`  
+`After=network.target`  
+`[Service]`  
+`ExecStart=/usr/bin/python3 -u <full path to python script>`  
+`rpi4-statusleds.py --debug no`  
+`WorkingDirectory=<full path to directory that contains the python script>`  
+`StandardOutput=inherit`  
+`StandardError=inherit`  
+`Restart=always`  
+`User=<name of user to run the script>`  
+`[Install]`  
+`WantedBy=multi-user.target`  
 # Grafana
 See grafana shares, pictures
-# Blinkt
