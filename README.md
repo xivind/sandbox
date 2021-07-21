@@ -125,5 +125,6 @@ This scipt uses the [ledstrip](https://shop.pimoroni.com/products/blinkt) from [
 `User=<name of user to run the script>`  
 `[Install]`  
 `WantedBy=multi-user.target`  
+![Pimoroni Blinkt](IMG_20210722_000358.jpg)
 # Grafana
 See grafana shares, pictures
