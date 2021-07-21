@@ -126,7 +126,7 @@ This scipt uses the [ledstrip](https://shop.pimoroni.com/products/blinkt) from [
 `[Install]`  
 `WantedBy=multi-user.target`  
 
-The Pimoroni Blinkt in use at a Raspberry Pi4b with the Argon40 Argon ONE M.2 Case
+The Pimoroni Blinkt in use at a Raspberry Pi4b with the [Argon40 Argon ONE M.2 Case](https://www.argon40.com/argon-one-m-2-case-for-raspberry-pi-4.html)
 ![Pimoroni Blinkt](/blinkt/IMG_20210722_000358.jpg)
 # Grafana
 See grafana shares, pictures
