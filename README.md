@@ -110,6 +110,17 @@ Create the container that retrieves data from [yr.no](https://www.yr.no) with th
 `--mqttPort 1883 \`  
 `--mqttTopic <mosquitto topic> \`  
 `--mqttClientID <mosquitto clientID>`
+# Grafana
+Once InfluxDB is set up and receives data over Mosquitto from the containers that retrieve data from Strava, Fitbit, Nilu and Yr, the data can easily be visualised in Grafana. Just set up [InfluxDB as datasource](https://grafana.com/docs/grafana/latest/datasources/add-a-data-source/) and create the diagrams that suits you. Some examples below 
+
+Basic visualisation of data from Strava
+![data from Strava](/grafana/strava.png)
+
+Basic visualisation of data from Fitbit
+![data from Fitbit](/grafana/fitbit.png)
+
+Basic visualisation of data from Nilu and Yr
+![data from Nilu and Yr](/grafana/climate.png)
 # Blinkt
 This scipt uses the [ledstrip](https://shop.pimoroni.com/products/blinkt) from [Pimoroni](https://shop.pimoroni.com/) to display system status. To make it run in the background, create a service file with the content below and place it in `/etc/systemd/system` Use `sudo systemctl enable <name of sercice file>` to make it run on system startup
 >`[Unit]`  
@@ -128,5 +139,3 @@ This scipt uses the [ledstrip](https://shop.pimoroni.com/products/blinkt) from [
 
 The Pimoroni Blinkt in use at a Raspberry Pi4b with the [Argon40 Argon ONE M.2 Case](https://www.argon40.com/argon-one-m-2-case-for-raspberry-pi-4.html)
 ![Pimoroni Blinkt](/blinkt/IMG_20210722_000358.jpg)
-# Grafana
-See grafana shares, pictures
