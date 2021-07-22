@@ -122,7 +122,7 @@ Basic visualisation of data from Fitbit
 Basic visualisation of data from Nilu and Yr
 ![data from Nilu and Yr](/grafana/climate.png)
 # Blinkt
-This scipt uses the [ledstrip](https://shop.pimoroni.com/products/blinkt) from [Pimoroni](https://shop.pimoroni.com/) to display system status. To make it run in the background, create a service file with the content below and place it in `/etc/systemd/system` Use `sudo systemctl enable <name of sercice file>` to make it run on system startup
+This scipt uses the [ledstrip](https://shop.pimoroni.com/products/blinkt) from [Pimoroni](https://shop.pimoroni.com/) to display system status. To make it run in the background, create a service file with the content below and place it in `/etc/systemd/system` Use `sudo systemctl enable <name of service file>` to make it run on system startup
 >`[Unit]`  
 `Description=Control status LEDs for RPI4s`  
 `After=network.target`  
