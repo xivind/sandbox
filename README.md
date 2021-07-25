@@ -89,6 +89,7 @@ Create the container that retrieves data from [nilu.no](https://www.nilu.no) wit
 `nilu \`  
 `./send-nilu.py \`  
 `--debug no \`  
+`--url <URl to Nilus API>`
 `--userAgent <email address of entity using the API> \`  
 `--mqttHost <mosquitto host> \`  
 `--mqttPort 1883 \`  
