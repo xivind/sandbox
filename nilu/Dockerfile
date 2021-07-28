@@ -13,7 +13,7 @@ WORKDIR /code
 
 # Copy only files needed for the application to be run within the container and the source files
 COPY --from=builder /root/.local /root/.local
-COPY send-nilu.py .
+COPY send_nilu.py .
 
 # Update PATH
 ENV PATH=/root/.local:$PATH

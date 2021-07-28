@@ -87,16 +87,16 @@ Create the container that retrieves data from [nilu.no](https://www.nilu.no) wit
 `-e TZ=Europe/Stockholm \`  
 `--restart unless-stopped \` 
 `nilu \`  
-`./send-nilu.py \`  
+`./send_-_nilu.py \`  
 `--debug no \`  
 `--url <URl to Nilus API>`
-`--userAgent <email address of entity using the API> \`  
-`--mqttHost <mosquitto host> \`  
-`--mqttPort 1883 \`  
-`--mqttTopic <mosquitto topic> \`  
-`--mqttClientID <mosquitto clientID>`
+`--user_agent <email address of entity using the API> \`  
+`--mqtt_host <mosquitto host> \`  
+`--mqtt_port 1883 \`  
+`--mqtt_topic <mosquitto topic> \`  
+`--mqtt_client_id <mosquitto clientID>`
 # Yr
-Create the container that retrieves data from [yr.no](https://www.yr.no) with the command below. This container only retrieves data from [yr.no](https://www.yr.no) and sends it to the mqtt broker. It does not need to persist data. The commands must be run from the directory that contains `Dockerfile` and `requirements.txt`
+Create the container that retrieves data from [yr.no](https://www.yr.no) with the command below. This container only retrieves data from [yr.no](https://www.yr.no) and sends it to the mqtt broker. It does not need to persist data. The commands must be run from the directory that contains `Dockerfile` and `requirements.txt` . Update the `urls.json` file with the Yr resources you would to query.
 > `docker build -t yr .`
 
 > `docker run -d \`  
@@ -104,13 +104,14 @@ Create the container that retrieves data from [yr.no](https://www.yr.no) with th
 `-e TZ=Europe/Stockholm \`  
 `--restart unless-stopped \` 
 `yr \`  
-`./send-yr.py \`  
+`./send_yr.py \`  
 `--debug no \`  
-`--userAgent <email address of entity using the API> \`  
-`--mqttHost <mosquitto host> \`  
-`--mqttPort 1883 \`  
-`--mqttTopic <mosquitto topic> \`  
-`--mqttClientID <mosquitto clientID>`
+`--url_file <path and filename of json file with Yr resources>`
+`--user_agent <email address of entity using the API> \`  
+`--mqtt_host <mosquitto host> \`  
+`--mqtt_port 1883 \`  
+`--mqtt_topic <mosquitto topic> \`  
+`--mqtt_client_id <mosquitto clientID>`
 # Grafana
 Once InfluxDB is set up and receives data over Mosquitto from the containers that retrieve data from Strava, Fitbit, Nilu and Yr, the data can easily be visualised in Grafana. Just set up [InfluxDB as datasource](https://grafana.com/docs/grafana/latest/datasources/add-a-data-source/) and create the diagrams that suits you. Some examples below 
 
