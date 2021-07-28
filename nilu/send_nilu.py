@@ -134,8 +134,6 @@ class Controller:
                 try:
                     broker_client.send_message(broker_client.prepared_message)
                     print(f'{self.now}: Sent this message: {broker_client.prepared_message}')
-                    self.error_timer = 0
-                    self.error_counter = 0
                     print(f'{self.now}: Pausing program for 20 minutes...')
                     ic()
                     self.error_timer = 0
@@ -161,12 +159,17 @@ class Controller:
 
     def get_serial_number(self):
         """Get Raspberry Pi serial number to use as ID"""
-        with open("/proc/cpuinfo", "r") as self.file:
-            for self.line in self.file:
-                if self.line[0:6] == "Serial":
-                    self.serial = self.line.split(":")[1].strip()
-        ic(self.serial)
-        return self.serial
+        try:
+            with open("/proc/cpuinfo", "r") as self.file:
+                for self.line in self.file:
+                    if self.line[0:6] == "Serial":
+                        self.serial = self.line.split(":")[1].strip()
+            ic(self.serial)
+            return self.serial
+
+        except Exception:
+            self.serial = "0"
+            return self.serial
 
     def validate_payload_nilu(self, transformed_data):
         """Method to check that payload contains at least one value"""
