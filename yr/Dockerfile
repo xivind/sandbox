@@ -13,7 +13,8 @@ WORKDIR /code
 
 # Copy only files needed for the application to be run within the container and the source files
 COPY --from=builder /root/.local /root/.local
-COPY send-yr.py .
+COPY send_yr.py .
+COPY urls.json .
 
 # Update PATH
 ENV PATH=/root/.local:$PATH
