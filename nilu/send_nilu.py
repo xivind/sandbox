@@ -1,6 +1,7 @@
 """ Code to retrieve data from Nilu and publish it on a Mosquitto broker """
 #!/usr/bin/python3
 
+import traceback
 import json
 import datetime
 import time
@@ -128,6 +129,8 @@ class Controller:
                 ic()
                 ic(self.error_counter)
                 ic(self.error_timer)
+                print(f'{self.now}: **** Info about the error ****')
+                traceback.print_exc()
                 time.sleep(self.error_timer)
 
             else:
@@ -149,6 +152,8 @@ class Controller:
                     ic()
                     ic(self.error_counter)
                     ic(self.error_timer)
+                    print(f'{self.now}: **** Info about the error ****')
+                    traceback.print_exc()
                     time.sleep(self.error_timer)
 
         while True:
