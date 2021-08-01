@@ -125,7 +125,9 @@ class Mqtt:
         """Method to prepare message that will be sent"""
         self.prepared_message = payload
         self.prepared_message.update({"serial" : serial})
-        self.prepared_message.update({"recordTime" : datetime.datetime.now().strftime(DATEFORMAT)})
+        self.prepared_message.update(\
+            {"recordTime" : datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+                                    ) 
         ic()
         ic(self.prepared_message)
         return self.prepared_message
