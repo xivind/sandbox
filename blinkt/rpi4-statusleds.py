@@ -1,210 +1,199 @@
+"""Code to show system status as led lights"""
 #!/usr/bin/env python3
 
-import psutil
 import time
-import datetime
 import colorsys
-import blinkt
-import argparse
-from blinkt import set_all, set_pixel, show, clear, set_brightness
-from pystemd.systemd1 import Unit
 from subprocess import PIPE, Popen
-from icecream import ic
+import psutil
+import blinkt
+from pystemd.systemd1 import Unit
 
-# For more info on the psystmd library >>> https://pypi.org/project/pystemd/
-# For more on icecream debugging, see https://pypi.org/project/icecream/
-
-# Reading variables for the script
-# For more on argparse, refer to https://zetcode.com/python/argparse/
-
-# Get Raspberry Pi Temperature
-def get_cpu_temperature():
-    process = Popen(
-        ["vcgencmd", "measure_temp"], stdout=PIPE, universal_newlines=True
-    )
-    output, _error = process.communicate()
-    ic()
-    return float(output[output.index("=") + 1 : output.rindex("'")])
-
-parser = argparse.ArgumentParser(description="Show leds for system status")
-parser.add_argument("--debug", type=str, help="Flag to enable or disable icecream debug",required=True)
-args = parser.parse_args()
-ic(args)
-
-print(f'{datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S")}: Starting program...')
-
-# Enable / disable debugging
-if args.debug == "yes":
-  print(f'{datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S")}: Debug mode')
-  ic()
-elif args.debug == "no":
-  ic.disable()
-  ic()
-  print(f'{datetime.datetime.now().strftime("%d.%m.%Y %H:%M:%S")}: Debug deactivated')
-
-# Make sure the leds stop and clear on exit
-blinkt.set_clear_on_exit()
-
-# Define units
-unitDocker = Unit(b'docker.service')
-unitPromtail = Unit(b'promtail-pi4.service')
-unitPrometheusexporter = Unit(b'prometheusexporter-pi4.service')
-
-# Define colors
-red = "64", "0", "0"
-orange = "64", "18", "0"
-green = "0", "64", "0"
-greenSoft = "0", "16", "0"
-blue = "0", "0", "1"
-white = "16", "16", "16"
-magenta = "128", "0", "128"
-
-# Dictionary to map topics to leds
-ledDict = {"temp" : 0,\
+class Blinkt():
+    """Class to interact with the Blinkt led device from Pimoroni"""
+    def __init__(self):
+        self.color_dict = {
+            "red" : ("64", "0", "0"),\
+            "orange" : ("64", "18", "0"),\
+            "green" : ("0", "16", "0"),\
+            "blue" : ("0", "0", "1"),\
+            "white" : ("16", "16", "16"),\
+            "magenta" : ("64", "0", "64"),\
+                        }
+        self.led_dict = {
+            "temp" : 0,\
             "cpuload" : 1,\
             "ramusage" : 2,\
             "diskusage" : 3,\
             "docker" : 4,\
             "promtail" : 5,\
-            "prometheusexporter" : 6,\
+            "prometheus" : 6,\
             "ssh" : 7\
-          }
+                        }
 
-# Test all leds
-spacing = 360.0 / 16.0
-hue = 0
-set_brightness(0.1)
+        self.test_leds()
+        self.initialise_leds()
 
-for testFlashes in range(120):
-    hue = int(time.time() * 100) % 360
-    for x in range(8):
-        offset = x * spacing
-        h = ((hue + offset) % 360) / 360.0
-        r, g, b = [int(c * 255) for c in colorsys.hsv_to_rgb(h, 1.0, 1.0)]
-        set_pixel(x, r, g, b)
-    show()
-    time.sleep(0.001)
+    def test_leds(self):
+        """Method to test all leds"""
+        spacing = 360.0 / 16.0
+        hue = 0
+        counter = 0
+        blinkt.set_brightness(0.1)
 
-clear()
+        while counter < 120:
+            hue = int(time.time() * 100) % 360
+            for led_nr in range(8):
+                offset = led_nr * spacing
+                hue_modified = ((hue + offset) % 360) / 360.0
+                red, green, blue = \
+                    [int(color * 255)\
+                        for color in colorsys.hsv_to_rgb(hue_modified, 1.0, 1.0)
+                    ]
+                blinkt.set_pixel(led_nr, red, green, blue)
+            blinkt.show()
+            time.sleep(0.001)
+            counter = counter+1
+        blinkt.clear()
 
-# Idle color on lights to be used
-for led in range (8):
-    set_pixel(led, *blue, brightness=0.1)
-    time.sleep(0.1)
-    show()
+    def initialise_leds(self):
+        """Method to set idle color on lights to be used"""
+        for led in range(8):
+            blinkt.set_pixel(led, *self.color_dict["blue"], brightness=0.1)
+            time.sleep(0.3)
+            blinkt.show()
 
-while(True):
-    
-    temp = get_cpu_temperature()
-    cpuload = psutil.cpu_percent(interval=1, percpu=False)
-    ramusage = psutil.virtual_memory().percent
-    diskusage = psutil.disk_usage('/').percent
-    unitDocker.load()
-    unitPromtail.load()
-    unitPrometheusexporter.load()
-    sessions = psutil.users()
+    def flash_lights(self):
+        """Method to flash all lights"""
+        blinkt.set_all(*self.color_dict["white"], brightness=0.1)
+        blinkt.show()
+        time.sleep(0.2)
 
-    # Flash all leds for script status once each time script run
-    set_all(*white, brightness=0.5)
-    show()
-    time.sleep(0.2)
+    def configure_leds(self):
+        """
+        Method to configur leds
+        For more info on the psystmd library >>> https://pypi.org/project/pystemd/
+        """
+        self.flash_lights()
+        SYSTEM.get_system_status()
 
-    
-    # Configure led for temp
-    if temp > 55:
-        set_pixel(ledDict["temp"], *red, brightness=0.5)
-        show()
-        ic()
-    elif temp > 45 and temp <= 55 :
-        set_pixel(ledDict["temp"], *orange, brightness=0.5)
-        show()
-        ic()
-    elif temp <= 45:
-        set_pixel(ledDict["temp"], *greenSoft, brightness=0.1)
-        show()
-        ic()
+        if int(SYSTEM.system_status["temp"]) > 55:
+            blinkt.set_pixel(self.led_dict["temp"], *self.color_dict["red"], brightness=0.1)
+            blinkt.show()
 
-    # Configure led for cpu load
-    if cpuload > 30:
-        set_pixel(ledDict["cpuload"], *red, brightness=0.5)
-        show()
-        ic()
-    elif cpuload > 20 and cpuload <= 30 :
-        set_pixel(ledDict["cpuload"], *orange, brightness=0.5)
-        show()
-        ic()
-    elif cpuload <= 20:
-        set_pixel(ledDict["cpuload"], *greenSoft, brightness=0.1)
-        show()
-        ic()
-    
-    # Configure led for ram usage
-    if ramusage > 30:
-        set_pixel(ledDict["ramusage"], *red, brightness=0.5)
-        show()
-        ic()
-    elif ramusage > 15 and ramusage <= 30 :
-        set_pixel(ledDict["ramusage"], *orange, brightness=0.5)
-        show()
-        ic()
-    elif ramusage <= 15:
-        set_pixel(ledDict["ramusage"], *greenSoft, brightness=0.1)
-        show()
-        ic()
+        elif int(SYSTEM.system_status["temp"]) in range(45, 55):
+            blinkt.set_pixel(self.led_dict["temp"], *self.color_dict["orange"], brightness=0.1)
+            blinkt.show()
 
-    # Configure led for disk usage
-    if diskusage > 60:
-        set_pixel(ledDict["diskusage"], *red, brightness=0.5)
-        show()
-        ic()
-    elif diskusage > 55 and diskusage <= 60 :
-        set_pixel(ledDict["diskusage"], *orange, brightness=0.5)
-        show()
-        ic()
-    elif diskusage <= 55:
-        set_pixel(ledDict["diskusage"], *greenSoft, brightness=0.1)
-        show()
-        ic()
+        elif int(SYSTEM.system_status["temp"]) < 45:
+            blinkt.set_pixel(self.led_dict["temp"], *self.color_dict["green"], brightness=0.1)
+            blinkt.show()
 
-    # Configure led for docker
-    if ic(unitDocker.Unit.ActiveState) == b"active":
-        set_pixel(ledDict["docker"], *greenSoft, brightness=0.1)
-        show()
-        ic()
-    else:
-        set_pixel(ledDict["docker"], *red, brightness=0.5)
-        show()
-        ic()
-    
-    # Configure led for promtail
-    if ic(unitPromtail.Unit.ActiveState) == b"active":
-        set_pixel(ledDict["promtail"], *greenSoft, brightness=0.1)
-        show()
-        ic()
-    else:
-        set_pixel(ledDict["promtail"], *red, brightness=0.5)
-        show()
-        ic()
+        if int(SYSTEM.system_status["cpuload"]) > 50:
+            blinkt.set_pixel(self.led_dict["cpuload"], *self.color_dict["red"], brightness=0.1)
+            blinkt.show()
 
-    # Configure led for prometheus exporter
-    if ic(unitPrometheusexporter.Unit.ActiveState) == b"active":
-        set_pixel(ledDict["prometheusexporter"], *greenSoft, brightness=0.1)
-        show()
-        ic()
-    else:
-        set_pixel(ledDict["prometheusexporter"], *red, brightness=0.5)
-        show()
-        ic()
+        elif int(SYSTEM.system_status["cpuload"]) in range(20, 50):
+            blinkt.set_pixel(self.led_dict["cpuload"], *self.color_dict["orange"], brightness=0.1)
+            blinkt.show()
 
-    # Configure led for ssh
-    for users in sessions:
-        if users.host != "" and users.host != "localhost":
-            set_pixel(ledDict["ssh"], *magenta, brightness=0.5)
-            show()
-            ic()
+        elif int(SYSTEM.system_status["cpuload"]) < 20:
+            blinkt.set_pixel(self.led_dict["cpuload"], *self.color_dict["green"], brightness=0.1)
+            blinkt.show()
+
+        if int(SYSTEM.system_status["ramusage"]) > 50:
+            blinkt.set_pixel(self.led_dict["ramusage"], *self.color_dict["red"], brightness=0.1)
+            blinkt.show()
+
+        elif int(SYSTEM.system_status["ramusage"]) in range(20, 50):
+            blinkt.set_pixel(self.led_dict["ramusage"], *self.color_dict["orange"], brightness=0.1)
+            blinkt.show()
+
+        elif int(SYSTEM.system_status["ramusage"]) < 20:
+            blinkt.set_pixel(self.led_dict["ramusage"], *self.color_dict["green"], brightness=0.1)
+            blinkt.show()
+
+        if int(SYSTEM.system_status["diskusage"]) > 75:
+            blinkt.set_pixel(self.led_dict["diskusage"], *self.color_dict["red"], brightness=0.1)
+            blinkt.show()
+
+        elif int(SYSTEM.system_status["diskusage"]) in range(60, 75):
+            blinkt.set_pixel(self.led_dict["diskusage"], *self.color_dict["orange"], brightness=0.1)
+            blinkt.show()
+
+        elif int(SYSTEM.system_status["diskusage"]) < 60:
+            blinkt.set_pixel(self.led_dict["diskusage"], *self.color_dict["green"], brightness=0.1)
+            blinkt.show()
+
+        if SYSTEM.system_status["docker"] == b"active":
+            blinkt.set_pixel(self.led_dict["docker"], *self.color_dict["green"], brightness=0.1)
+            blinkt.show()
+
         else:
-            set_pixel(ledDict["ssh"], *greenSoft, brightness=0.1)
-            show()
-            ic()
+            blinkt.set_pixel(self.led_dict["docker"], *self.color_dict["red"], brightness=0.1)
+            blinkt.show()
 
-    time.sleep(60)
+        if SYSTEM.system_status["promtail"] == b"active":
+            blinkt.set_pixel(self.led_dict["promtail"], *self.color_dict["green"], brightness=0.1)
+            blinkt.show()
+
+        else:
+            blinkt.set_pixel(self.led_dict["promtail"], *self.color_dict["red"], brightness=0.1)
+            blinkt.show()
+
+        if SYSTEM.system_status["prometheus"] == b"active":
+            blinkt.set_pixel(self.led_dict["prometheus"], *self.color_dict["green"], brightness=0.1)
+            blinkt.show()
+
+        else:
+            blinkt.set_pixel(self.led_dict["prometheus"], *self.color_dict["red"], brightness=0.1)
+            blinkt.show()
+
+        for users in SYSTEM.system_status["ssh"]:
+            if users.host != "" and users.host != "localhost":
+                blinkt.set_pixel(self.led_dict["ssh"], *self.color_dict["magenta"], brightness=0.1)
+                blinkt.show()
+
+            else:
+                blinkt.set_pixel(self.led_dict["ssh"], *self.color_dict["green"], brightness=0.1)
+                blinkt.show()
+class System():
+    """Class to retrieve system information"""
+    def __init__(self):
+        self.unit_docker = Unit(b'docker.service')
+        self.unit_promtail = Unit(b'promtail-pi4.service')
+        self.unit_prometheus = Unit(b'prometheusexporter-pi4.service')
+        self.system_status = {}
+
+    def get_system_status(self):
+        """Method to read and store system status"""
+        self.system_status = {}
+        self.unit_docker.load()
+        self.unit_promtail.load()
+        self.unit_prometheus.load()
+        self.system_status.update({
+            "temp" : self.get_cpu_temperature(),\
+            "cpuload" : psutil.cpu_percent(interval=1, percpu=False),\
+            "ramusage" : psutil.virtual_memory().percent,\
+            "diskusage" : psutil.disk_usage('/').percent,\
+            "docker" : self.unit_docker.Unit.ActiveState,\
+            "promtail" : self.unit_promtail.Unit.ActiveState,\
+            "prometheus" : self.unit_prometheus.Unit.ActiveState,\
+            "ssh" : psutil.users(),\
+                                })
+
+    def get_cpu_temperature(self):
+        """Method to get Pi temperature"""
+        process = Popen(
+            ["vcgencmd", "measure_temp"], stdout=PIPE, universal_newlines=True
+        )
+        output, _error = process.communicate()
+        return float(output[output.index("=") + 1 : output.rindex("'")])
+
+if __name__ == "__main__":
+
+    SYSTEM = System()
+    LED_DEVICE = Blinkt()
+
+    while True:
+        LED_DEVICE.configure_leds()
+        time.sleep(60)

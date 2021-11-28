@@ -150,7 +150,7 @@ This scipt uses the [ledstrip](https://shop.pimoroni.com/products/blinkt) from [
 `After=network.target`  
 `[Service]`  
 `ExecStart=/usr/bin/python3 -u <full path to python script>`  
-`rpi4-statusleds.py --debug no`  
+`rpi4-statusleds.py`  
 `WorkingDirectory=<full path to directory that contains the python script>`  
 `StandardOutput=inherit`  
 `StandardError=inherit`  
