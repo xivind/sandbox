@@ -7,8 +7,25 @@ import datetime
 import time
 import argparse
 import requests
-import paho.mqtt.client as mqtt
+import paho.mqtt.client
 from icecream import ic
+
+class System:
+    """Class for Raspberry Pi"""
+    def get_serial_number(self):
+        """Get Raspberry Pi serial number to use as ID"""
+        serial = ""
+        try:
+            with open("/proc/cpuinfo", "r") as file:
+                for line in file:
+                    if line[0:6] == "Serial":
+                        serial = line.split(":")[1].strip()
+            ic(serial)
+            return serial
+
+        except Exception:
+            serial = "0"
+            return serial
 
 class HttpRequest:
     """Class to handle http requests"""
@@ -16,18 +33,24 @@ class HttpRequest:
         self.user_agent = user_agent
         self.headers = requests.utils.default_headers()
         self.headers.update({'User-Agent': f'Private use only - {self.user_agent}'})
-        self.http_response_raw = ""
-        self.data_to_transform = ""
-        self.transformed_data = dict()
-        self.dictionaries = dict()
-        self.keys = ""
 
     def get_data(self, url):
         """Method to make a http request and return a raw response"""
-        self.http_response_raw = requests.get(url, headers=self.headers).json()
+        http_response_raw = requests.get(url, headers=self.headers).json()
         ic()
-        ic(self.http_response_raw)
-        return self.http_response_raw
+        ic(http_response_raw)
+        return http_response_raw
+
+class Data:
+    """Class to handle data objects"""
+    def __init__(self):
+        self.transformed_data = dict()
+        self.prepared_message = dict()
+        self.serial = ""
+
+    def store_serial(self, serial):
+        """Method to store serial number of pi"""
+        self.serial = serial
 
     def transform_data(self, data_to_transform):
         """
@@ -37,57 +60,61 @@ class HttpRequest:
         https://api.nilu.no/
         https://www.eea.europa.eu/themes/air/air-quality/resources/air-quality-map-thresholds#toc-13
         """
-        self.data_to_transform = data_to_transform
-        self.transformed_data = dict()
 
-        for self.dictionaries in self.data_to_transform:
+        self.transformed_data.clear()
 
-            for self.keys in self.dictionaries.keys():
+        for dictionaries in data_to_transform:
 
-                if self.dictionaries[self.keys] == "PM10":
-                    self.transformed_data.update({"airquality_pm10" : self.dictionaries["value"]})
+            for keys in dictionaries.keys():
+
+                if dictionaries[keys] == "PM10":
+                    self.transformed_data.update({"airquality_pm10" : dictionaries["value"]})
                     ic()
                     ic(self.transformed_data["airquality_pm10"])
 
-                if self.dictionaries[self.keys] == "PM2.5":
-                    self.transformed_data.update({"airquality_pm25" : self.dictionaries["value"]})
+                if dictionaries[keys] == "PM2.5":
+                    self.transformed_data.update({"airquality_pm25" : dictionaries["value"]})
                     ic()
                     ic(self.transformed_data["airquality_pm25"])
 
-                if self.dictionaries[self.keys] == "NO2":
-                    self.transformed_data.update({"airquality_no2" : self.dictionaries["value"]})
+                if dictionaries[keys] == "NO2":
+                    self.transformed_data.update({"airquality_no2" : dictionaries["value"]})
                     ic()
                     ic(self.transformed_data["airquality_no2"])
 
         ic()
         ic(self.transformed_data)
-        return self.transformed_data
 
-class Mqtt:
-    """Class to prepare messages and interact with Mosquitto messagebroker"""
-    def __init__(self, mqtt_host, mqtt_port, mqtt_topic, mqtt_client_id):
-        self.mqtt_host = mqtt_host
-        self.mqtt_port = mqtt_port
-        self.mqtt_topic = mqtt_topic
-        self.mqtt_client_id = mqtt_client_id
-        self.mqtt_client = mqtt.Client(self.mqtt_client_id)
-        self.prepared_message = ""
+    def validate_payload(self, unvalidated_data):
+        """Method to check that payload contains at least one value"""
+        validate_payload = unvalidated_data.copy()
+        validate_payload.popitem()
+        ic()
+        del validate_payload
 
-    def prepare_message(self, payload, serial):
+    def prepare_message(self):
         """Method to prepare message that will be sent"""
-        self.prepared_message = payload
-        self.prepared_message.update({"serial" : serial})
+        self.prepared_message = self.transformed_data
+        self.prepared_message.update({"serial" : self.serial})
         self.prepared_message.update(\
             {"recordTime" : datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
                                     )
         ic()
         ic(self.prepared_message)
-        return self.prepared_message
+
+class Mqtt(paho.mqtt.client.Client):
+    """Class to interact with Mosquitto messagebroker"""
+    def __init__(self, mqtt_host, mqtt_port, mqtt_topic, mqtt_client_id):
+        super().__init__()
+        self.mqtt_host = mqtt_host
+        self.mqtt_port = mqtt_port
+        self.mqtt_topic = mqtt_topic
+        self.mqtt_client_id = mqtt_client_id
 
     def send_message(self, message):
         """Method to send message via a Mosquitto message broker"""
-        self.mqtt_client.connect(self.mqtt_host, self.mqtt_port)
-        self.mqtt_client.publish(self.mqtt_topic, json.dumps(message))
+        self.connect(self.mqtt_host, self.mqtt_port)
+        self.publish(self.mqtt_topic, json.dumps(message))
         ic()
         ic(message)
 
@@ -95,95 +122,76 @@ class Controller:
     """Class to control the program"""
     def __init__(self, control_parameters):
         self.control_parameters = control_parameters
-        self.error_timer = 0
-        self.error_counter = 0
-        self.validate_payload = ""
-        self.serial = self.get_serial_number()
-        self.now = ""
         self.main_loop()
 
     def main_loop(self):
         """Method to manage the program"""
-        while self.error_counter <= 5:
-            self.now = datetime.datetime.now().strftime(DATEFORMAT)
+        nilu = HttpRequest(self.control_parameters.user_agent)
+        datastore = Data()
+        system = System()
+        broker_client = Mqtt(self.control_parameters.mqtt_host,\
+                            self.control_parameters.mqtt_port,\
+                            self.control_parameters.mqtt_topic,\
+                            self.control_parameters.mqtt_client_id)
+        error_timer = 0
+        error_counter = 0
+        now = ""
+        datastore.store_serial(system.get_serial_number())
 
-            print(f'{self.now}: error_counter is at {self.error_counter}, max is 5\n\
-                     error_timer is at {round(self.error_timer/60)} minutes')
+        while error_counter <= 5:
+            now = datetime.datetime.now().strftime(DATEFORMAT)
+
+            print(f'{now}: error_counter is at {error_counter}, max is 5\n\
+                     error_timer is at {round(error_timer/60)} minutes')
 
             try:
-                nilu = HttpRequest(self.control_parameters.user_agent)
-                nilu.get_data(self.control_parameters.url)
-                nilu.transform_data(nilu.http_response_raw)
-                self.validate_payload_nilu(nilu.transformed_data)
-                broker_client = Mqtt(self.control_parameters.mqtt_host,\
-                                    self.control_parameters.mqtt_port,\
-                                    self.control_parameters.mqtt_topic,\
-                                    self.control_parameters.mqtt_client_id)
-                broker_client.prepare_message(nilu.transformed_data, self.serial)
+                data_raw = nilu.get_data(self.control_parameters.url)
+                datastore.transform_data(data_raw)
+                datastore.validate_payload(datastore.transformed_data)
+                datastore.prepare_message()
                 ic()
 
             except Exception:
-                print(f'{self.now}: An error occured during retrieving and processing of data..')
-                self.error_timer = self.error_timer + 1800
-                self.error_counter = self.error_counter + 1
-                print(f'{self.now}: Adjusting error_counter to {self.error_counter}\n\
-                     Pausing for {round(self.error_timer/60)} minutes')
+                print(f'{now}: An error occured during retrieving and processing of data..')
+                error_timer = error_timer + 1800
+                error_counter = error_counter + 1
+                print(f'{now}: Adjusting error_counter to {error_counter}\n\
+                     Pausing for {round(error_timer/60)} minutes')
                 ic()
-                ic(self.error_counter)
-                ic(self.error_timer)
-                print(f'{self.now}: **** Info about the error ****')
+                ic(error_counter)
+                ic(error_timer)
+                print(f'{now}: **** Info about the error ****')
                 traceback.print_exc()
-                time.sleep(self.error_timer)
+                time.sleep(error_timer)
 
             else:
                 try:
-                    broker_client.send_message(broker_client.prepared_message)
-                    print(f'{self.now}: Sent this message: {broker_client.prepared_message}')
-                    print(f'{self.now}: Pausing program for 20 minutes...')
+                    broker_client.send_message(datastore.prepared_message)
+                    print(f'{now}: Sent this message: {datastore.prepared_message}')
+                    print(f'{now}: Pausing program for 20 minutes...')
                     ic()
-                    self.error_timer = 0
-                    self.error_counter = 0
+                    error_timer = 0
+                    error_counter = 0
                     time.sleep(1200)
 
                 except Exception:
-                    print(f'{self.now}: An error occured during communication with MQTT..')
-                    self.error_timer = self.error_timer + 1800
-                    self.error_counter = self.error_counter + 1
-                    print(f'{self.now}: Adjusting error_counter to {self.error_counter}\n\
-                         Pausing for {round(self.error_timer/60)} minutes')
+                    print(f'{now}: An error occured during communication with MQTT..')
+                    error_timer = error_timer + 1800
+                    error_counter = error_counter + 1
+                    print(f'{now}: Adjusting error_counter to {error_counter}\n\
+                         Pausing for {round(error_timer/60)} minutes')
                     ic()
-                    ic(self.error_counter)
-                    ic(self.error_timer)
-                    print(f'{self.now}: **** Info about the error ****')
+                    ic(error_counter)
+                    ic(error_timer)
+                    print(f'{now}: **** Info about the error ****')
                     traceback.print_exc()
-                    time.sleep(self.error_timer)
+                    time.sleep(error_timer)
 
         while True:
-            self.now = datetime.datetime.now().strftime(DATEFORMAT)
-            print(f'{self.now}: Max errors exceeded, program has terminated...')
+            now = datetime.datetime.now().strftime(DATEFORMAT)
+            print(f'{now}: Max errors exceeded, program has terminated...')
             ic()
             time.sleep(7200)
-
-    def get_serial_number(self):
-        """Get Raspberry Pi serial number to use as ID"""
-        try:
-            with open("/proc/cpuinfo", "r") as self.file:
-                for self.line in self.file:
-                    if self.line[0:6] == "Serial":
-                        self.serial = self.line.split(":")[1].strip()
-            ic(self.serial)
-            return self.serial
-
-        except Exception:
-            self.serial = "0"
-            return self.serial
-
-    def validate_payload_nilu(self, transformed_data):
-        """Method to check that payload contains at least one value"""
-        self.validate_payload = transformed_data.copy()
-        self.validate_payload.popitem()
-        ic()
-        del self.validate_payload
 
 def read_parameters():
     """
