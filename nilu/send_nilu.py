@@ -1,4 +1,4 @@
-""" Code to retrieve data from Nilu and publish it on a Mosquitto broker """
+"""Code to retrieve data from Nilu and publish it on a Mosquitto broker"""
 #!/usr/bin/python3
 
 import traceback
@@ -10,8 +10,10 @@ import requests
 import paho.mqtt.client
 from icecream import ic
 
+
 class System:
     """Class for Raspberry Pi"""
+
     def get_serial_number(self):
         """Get Raspberry Pi serial number to use as ID"""
         serial = ""
@@ -27,12 +29,15 @@ class System:
             serial = "0"
             return serial
 
+
 class HttpRequest:
     """Class to handle http requests"""
+
     def __init__(self, user_agent):
         self.user_agent = user_agent
         self.headers = requests.utils.default_headers()
-        self.headers.update({'User-Agent': f'Private use only - {self.user_agent}'})
+        self.headers.update(
+            {'User-Agent': f'Private use only - {self.user_agent}'})
 
     def get_data(self, url):
         """Method to make a http request and return a raw response"""
@@ -41,8 +46,10 @@ class HttpRequest:
         ic(http_response_raw)
         return http_response_raw
 
+
 class Data:
     """Class to handle data objects"""
+
     def __init__(self):
         self.transformed_data = dict()
         self.prepared_message = dict()
@@ -68,42 +75,47 @@ class Data:
             for keys in dictionaries.keys():
 
                 if dictionaries[keys] == "PM10":
-                    self.transformed_data.update({"airquality_pm10" : dictionaries["value"]})
+                    self.transformed_data.update(
+                        {"airquality_pm10": dictionaries["value"]})
                     ic()
                     ic(self.transformed_data["airquality_pm10"])
 
                 if dictionaries[keys] == "PM2.5":
-                    self.transformed_data.update({"airquality_pm25" : dictionaries["value"]})
+                    self.transformed_data.update(
+                        {"airquality_pm25": dictionaries["value"]})
                     ic()
                     ic(self.transformed_data["airquality_pm25"])
 
                 if dictionaries[keys] == "NO2":
-                    self.transformed_data.update({"airquality_no2" : dictionaries["value"]})
+                    self.transformed_data.update(
+                        {"airquality_no2": dictionaries["value"]})
                     ic()
                     ic(self.transformed_data["airquality_no2"])
 
         ic()
         ic(self.transformed_data)
 
-    def validate_payload(self, unvalidated_data):
+    def validate_data(self, unvalidated_data):
         """Method to check that payload contains at least one value"""
-        validate_payload = unvalidated_data.copy()
-        validate_payload.popitem()
+        validate_data = unvalidated_data.copy()
+        validate_data.popitem()
         ic()
-        del validate_payload
+        del validate_data
 
     def prepare_message(self):
         """Method to prepare message that will be sent"""
         self.prepared_message = self.transformed_data
-        self.prepared_message.update({"serial" : self.serial})
-        self.prepared_message.update(\
-            {"recordTime" : datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
+        self.prepared_message.update({"serial": self.serial})
+        self.prepared_message.update(
+            {"recordTime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
                                     )
         ic()
         ic(self.prepared_message)
 
+
 class Mqtt(paho.mqtt.client.Client):
     """Class to interact with Mosquitto messagebroker"""
+
     def __init__(self, mqtt_host, mqtt_port, mqtt_topic, mqtt_client_id):
         super().__init__()
         self.mqtt_host = mqtt_host
@@ -118,8 +130,10 @@ class Mqtt(paho.mqtt.client.Client):
         ic()
         ic(message)
 
+
 class Controller:
     """Class to control the program"""
+
     def __init__(self, control_parameters):
         self.control_parameters = control_parameters
         self.main_loop()
@@ -129,16 +143,16 @@ class Controller:
         nilu = HttpRequest(self.control_parameters.user_agent)
         datastore = Data()
         system = System()
-        broker_client = Mqtt(self.control_parameters.mqtt_host,\
-                            self.control_parameters.mqtt_port,\
-                            self.control_parameters.mqtt_topic,\
-                            self.control_parameters.mqtt_client_id)
+        broker_client = Mqtt(self.control_parameters.mqtt_host,
+                             self.control_parameters.mqtt_port,
+                             self.control_parameters.mqtt_topic,
+                             self.control_parameters.mqtt_client_id)
         error_timer = 0
         error_counter = 0
         now = ""
         datastore.store_serial(system.get_serial_number())
 
-        while error_counter <= 5:
+        while True:
             now = datetime.datetime.now().strftime(DATEFORMAT)
 
             print(f'{now}: error_counter is at {error_counter}, max is 5\n\
@@ -147,12 +161,13 @@ class Controller:
             try:
                 data_raw = nilu.get_data(self.control_parameters.url)
                 datastore.transform_data(data_raw)
-                datastore.validate_payload(datastore.transformed_data)
+                datastore.validate_data(datastore.transformed_data)
                 datastore.prepare_message()
                 ic()
 
             except Exception:
-                print(f'{now}: An error occured during retrieving and processing of data..')
+                print(
+                    f'{now}: An error occured during retrieving and processing of data..')
                 error_timer = error_timer + 1800
                 error_counter = error_counter + 1
                 print(f'{now}: Adjusting error_counter to {error_counter}\n\
@@ -175,7 +190,8 @@ class Controller:
                     time.sleep(1200)
 
                 except Exception:
-                    print(f'{now}: An error occured during communication with MQTT..')
+                    print(
+                        f'{now}: An error occured during communication with MQTT..')
                     error_timer = error_timer + 1800
                     error_counter = error_counter + 1
                     print(f'{now}: Adjusting error_counter to {error_counter}\n\
@@ -187,36 +203,42 @@ class Controller:
                     traceback.print_exc()
                     time.sleep(error_timer)
 
-        while True:
-            now = datetime.datetime.now().strftime(DATEFORMAT)
-            print(f'{now}: Max errors exceeded, program has terminated...')
-            ic()
-            time.sleep(7200)
+            if error_counter > 5:
+                now = datetime.datetime.now().strftime(DATEFORMAT)
+                print(f'{now}: Max errors exceeded, halting program...')
+                ic()
+                time.sleep(14400)
+                now = datetime.datetime.now().strftime(DATEFORMAT)
+                print(f'{now}: Resetting error counter and restarting program...')
+                error_counter = 0
+
 
 def read_parameters():
     """
     Function for reading variables for the script,
     for more on argparse, refer to https://zetcode.com/python/argparse/
     """
-    parser = argparse.ArgumentParser(description="Publish Nilu values over mqtt")
-    parser.add_argument("--debug", type=str,\
-         help="Flag to enable or disable icecream debug", required=True)
-    parser.add_argument("--user_agent", type=str,\
-         help="email to identify with API owner", required=True)
-    parser.add_argument("--url", type=str,\
-         help="URL to API which will handle the request", required=True)
-    parser.add_argument("--mqtt_host", type=str,\
-         help="Hostname of MQTT server", required=True)
-    parser.add_argument("--mqtt_port", type=int,\
-         help="Port of MQTT server", required=True)
-    parser.add_argument("--mqtt_topic", type=str,\
-         help="MQTT topic to publish", required=True)
-    parser.add_argument("--mqtt_client_id", type=str,\
-         help="ClientID of the sending MQTT client", required=True)
+    parser = argparse.ArgumentParser(
+        description="Publish Nilu values over mqtt")
+    parser.add_argument("--debug", type=str,
+                        help="Flag to enable or disable icecream debug", required=True)
+    parser.add_argument("--user_agent", type=str,
+                        help="email to identify with API owner", required=True)
+    parser.add_argument("--url", type=str,
+                        help="URL to API which will handle the request", required=True)
+    parser.add_argument("--mqtt_host", type=str,
+                        help="Hostname of MQTT server", required=True)
+    parser.add_argument("--mqtt_port", type=int,
+                        help="Port of MQTT server", required=True)
+    parser.add_argument("--mqtt_topic", type=str,
+                        help="MQTT topic to publish", required=True)
+    parser.add_argument("--mqtt_client_id", type=str,
+                        help="ClientID of the sending MQTT client", required=True)
     args = parser.parse_args()
     ic()
     ic(args)
     return args
+
 
 if __name__ == "__main__":
 
