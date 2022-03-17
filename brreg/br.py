@@ -29,25 +29,27 @@ def dump_exportobject():
     """Function to write export object to file"""
     pass
 
-NAERINGCODES = "86"
+NAERINGCODES = "87.1"
+JSON_DUMP = dict()
 
 http_response_raw = requests.get(f'https://data.brreg.no/enhetsregisteret/api/enheter?naeringskode={NAERINGCODES}&page=0', headers=requests.utils.default_headers()).json()
 
-print(f'Query overview for naeringcodes {naeringcodes}:')
+print(f'Query overview for naeringcodes {NAERINGCODES}:')
 print(f'Total elements: {http_response_raw.get("page").get("totalElements")}, total pages: {http_response_raw.get("page").get("totalPages")}')
-
-#for items in http_response_raw.get("page").items():
- #   print(items)
 
 
 totalpages = http_response_raw.get("page").get("totalPages")
 pagecounter = 0
 
-#Copy _embedded?
 
-# Change to for-loop
-while pagecounter <= totalpages:
-    http_response_raw = requests.get(f'https://data.brreg.no/enhetsregisteret/api/enheter?naeringskode={naeringcodes}&page={pagecounter}', headers=requests.utils.default_headers()).json()
-    print(f'Getting data from page: {http_response_raw.get("page").get("number")} of {totalpages}')
+
+while pagecounter < totalpages:
+    http_response_raw = requests.get(f'https://data.brreg.no/enhetsregisteret/api/enheter?naeringskode={NAERINGCODES}&page={pagecounter}', headers=requests.utils.default_headers()).json()
+    print(f'Getting data from page: {http_response_raw.get("page").get("number")+1} of {totalpages}')
+    content = http_response_raw.get("_embedded").get("enheter")
+    JSON_DUMP.update({pagecounter:content})
     pagecounter = pagecounter+1
-    
+
+
+with open('outfile.json', 'w') as outfile:
+    json.dump(JSON_DUMP, outfile)
