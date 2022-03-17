@@ -5,6 +5,10 @@ import json
 import requests
 from icecream import ic
 
+PAGECOUNTER = 0
+NAERINGCODES = "86.1, 87.1"
+JSON_DUMP = dict()
+
 def read_parameters():
     """Function to read parameters from command line"""
     pass
@@ -13,43 +17,37 @@ def read_naeringcodes():
     """Function to read naering codes from specified file"""
     pass
 
-def make_httprequest():
-    """Function to retrieve data from BR endpoint"""
-    pass
+def make_httprequest(NAERINGCODES, PAGECOUNTER):
+    """Function to make the API call"""
+    return requests.get(f'https://data.brreg.no/enhetsregisteret/api/enheter?naeringskode={NAERINGCODES}&page={PAGECOUNTER}', headers=requests.utils.default_headers()).json()
 
 def parse_httpresponse():
     """Function to parse data from BR endpoint"""
     pass
 
-def update_exportobject():
+def update_exportobject(key, value):
     """Function to update export object"""
-    pass
+    JSON_DUMP.update({key:value})
 
-def dump_exportobject():
+def dump_exportobject(exportobject):
     """Function to write export object to file"""
-    pass
+    with open('outfile.json', 'w') as outfile:
+        json.dump(exportobject, outfile)
 
-NAERINGCODES = "87.1"
-JSON_DUMP = dict()
-
-http_response_raw = requests.get(f'https://data.brreg.no/enhetsregisteret/api/enheter?naeringskode={NAERINGCODES}&page=0', headers=requests.utils.default_headers()).json()
-
+#Main program
 print(f'Query overview for naeringcodes {NAERINGCODES}:')
-print(f'Total elements: {http_response_raw.get("page").get("totalElements")}, total pages: {http_response_raw.get("page").get("totalPages")}')
+datainfo = make_httprequest(NAERINGCODES, PAGECOUNTER)
+print(f'Total elements: {datainfo.get("page").get("totalElements")}, total pages: {datainfo.get("page").get("totalPages")}')
 
+"""Get total pages to use as counter"""
+totalpages = datainfo.get("page").get("totalPages")
 
-totalpages = http_response_raw.get("page").get("totalPages")
-pagecounter = 0
+while PAGECOUNTER < totalpages:
+    content = make_httprequest(NAERINGCODES, PAGECOUNTER)
+    print(f'Got data from page: {content.get("page").get("number")+1} of {totalpages}')
+    update_exportobject(PAGECOUNTER, content.get("_embedded").get("enheter"))
+    print("Updated exportobject")
+    PAGECOUNTER = PAGECOUNTER+1
 
+dump_exportobject(JSON_DUMP)
 
-
-while pagecounter < totalpages:
-    http_response_raw = requests.get(f'https://data.brreg.no/enhetsregisteret/api/enheter?naeringskode={NAERINGCODES}&page={pagecounter}', headers=requests.utils.default_headers()).json()
-    print(f'Getting data from page: {http_response_raw.get("page").get("number")+1} of {totalpages}')
-    content = http_response_raw.get("_embedded").get("enheter")
-    JSON_DUMP.update({pagecounter:content})
-    pagecounter = pagecounter+1
-
-
-with open('outfile.json', 'w') as outfile:
-    json.dump(JSON_DUMP, outfile)
