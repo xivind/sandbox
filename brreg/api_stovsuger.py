@@ -39,7 +39,7 @@ print(f'Treff på for næringskode(r) {NAERINGCODES}:')
 datainfo = make_httprequest(NAERINGCODES, PAGECOUNTER)
 print(f'Totalt antall elementer: {datainfo.get("page").get("totalElements")}, totalt antall sider: {datainfo.get("page").get("totalPages")}')
 
-"""Get total pages to use as counter"""
+#Get total pages to use as counter
 totalpages = datainfo.get("page").get("totalPages")
 
 while PAGECOUNTER < totalpages:
@@ -51,4 +51,3 @@ while PAGECOUNTER < totalpages:
 
 print("Skriver til fil..")
 dump_exportobject(JSON_DUMP)
-
