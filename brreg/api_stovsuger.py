@@ -6,7 +6,7 @@ import requests
 from icecream import ic
 
 PAGECOUNTER = 0
-NAERINGCODES = "86.1, 87.1"
+NAERINGCODES = "86.1, 87.1" #Oppgi liste med komma mellom verdier
 JSON_DUMP = dict()
 
 def read_parameters():
@@ -31,7 +31,7 @@ def update_exportobject(key, value):
 
 def dump_exportobject(exportobject):
     """Function to write export object to file"""
-    with open('outfile.json', 'w') as outfile:
+    with open('api_stovsuger_ut.json', 'w') as outfile:
         json.dump(exportobject, outfile)
 
 #Main program
@@ -49,6 +49,6 @@ while PAGECOUNTER < totalpages:
     print("Oppdaterte datadump")
     PAGECOUNTER = PAGECOUNTER+1
 
-print("Skriver fil fil..")
+print("Skriver til fil..")
 dump_exportobject(JSON_DUMP)
 
