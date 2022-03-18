@@ -35,19 +35,20 @@ def dump_exportobject(exportobject):
         json.dump(exportobject, outfile)
 
 #Main program
-print(f'Query overview for naeringcodes {NAERINGCODES}:')
+print(f'Treff på for næringskode(r) {NAERINGCODES}:')
 datainfo = make_httprequest(NAERINGCODES, PAGECOUNTER)
-print(f'Total elements: {datainfo.get("page").get("totalElements")}, total pages: {datainfo.get("page").get("totalPages")}')
+print(f'Totalt antall elementer: {datainfo.get("page").get("totalElements")}, totalt antall sider: {datainfo.get("page").get("totalPages")}')
 
 """Get total pages to use as counter"""
 totalpages = datainfo.get("page").get("totalPages")
 
 while PAGECOUNTER < totalpages:
     content = make_httprequest(NAERINGCODES, PAGECOUNTER)
-    print(f'Got data from page: {content.get("page").get("number")+1} of {totalpages}')
+    print(f'Hentet data fra side: {content.get("page").get("number")+1} of {totalpages}')
     update_exportobject(PAGECOUNTER, content.get("_embedded").get("enheter"))
-    print("Updated exportobject")
+    print("Oppdaterte datadump")
     PAGECOUNTER = PAGECOUNTER+1
 
+print("Skriver fil fil..")
 dump_exportobject(JSON_DUMP)
 
