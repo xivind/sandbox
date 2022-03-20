@@ -15,7 +15,7 @@ with open('er.xlsx','wb') as f:
         f.write(chunk)
 
 # Konverterer til CSV        
-%time Xlsx2csv("er.xlsx", outputencoding="utf-8").convert("er.csv")
+Xlsx2csv("er.xlsx", outputencoding="utf-8").convert("er.csv")
 
 # Lager pandas dataframe 
 df = pd.read_csv('er.csv', dtype={
@@ -70,6 +70,6 @@ df2 = df[["Organisasjonsnummer", "Navn", 'Organisasjonsform.kode', "Organisasjon
 enheter = df2[(df2["Næringskode 1"].between("86.1", "86.2")) | (df2["Næringskode 1"].between("87.1", "87.2"))]
 
 #Skriver til CSV (NOTE: MÅ OPPDATERE LOKAL PATH)
-import os  
-os.makedirs('folder/subfolder', exist_ok=True)  
-enheter.to_csv('folder/subfolder/out.csv') 
+#import os  
+#os.makedirs('folder/subfolder', exist_ok=True)  
+enheter.to_csv('out.csv') 
