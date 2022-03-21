@@ -8,6 +8,7 @@ import numpy as np
 import requests
 
 
+"""
 OUTFILE = 'out.csv'
 
 file_exists = exists(OUTFILE)
@@ -16,20 +17,23 @@ if file_exists == True:
          print("File exists")
 else: 
         print("no exist")
-
+"""
 
 
 def get_dataset():
-        # Laster ned xlsx-fil med alle enheter i enhetsregisteret
-        url = 'https://data.brreg.no/enhetsregisteret/api/enheter/lastned/regneark'
-        headers = {'Accept': 'application/vnd.brreg.enhetsregisteret.enhet+vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8'}
-        session = requests.Session() # establish a session that is kept open during the transfer, instead of performing separate requests
-        r = session.get(url, headers=headers, stream = True)
-        r.raise_for_status()
 
-        with open('er.xlsx','wb') as f:
-                for chunk in r.iter_content(1024*1024*2): # laster ned og skriver ca 2 MB av gangen
-                        f.write(chunk)
+
+
+# Laster ned xlsx-fil med alle enheter i enhetsregisteret
+url = 'https://data.brreg.no/enhetsregisteret/api/enheter/lastned/regneark'
+headers = {'Accept': 'application/vnd.brreg.enhetsregisteret.enhet+vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8'}
+session = requests.Session() # establish a session that is kept open during the transfer, instead of performing separate requests
+r = session.get(url, headers=headers, stream = True)
+r.raise_for_status()
+
+with open('er.xlsx','wb') as f:
+for chunk in r.iter_content(1024*1024*2): # laster ned og skriver ca 2 MB av gangen
+f.write(chunk)
 
 # Konverterer til CSV        
 Xlsx2csv("er.xlsx", outputencoding="utf-8").convert("er.csv")
