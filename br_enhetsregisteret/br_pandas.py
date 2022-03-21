@@ -63,11 +63,17 @@ df = pd.read_csv('er.csv', dtype={
         'Overordnet enhet i offentlig sektor': str,
         'Målform': 'category' })
 
-# Lager ny pandas dataframe med utvalgte kolonner
+# Henter ut relevante kolonner
 df2 = df[["Organisasjonsnummer", "Navn", 'Organisasjonsform.kode', "Organisasjonsform.beskrivelse", "Næringskode 1", "Næringskode 1.beskrivelse", "Postadresse.adresse", "Postadresse.kommune", "Registreringsdato i Enhetsregisteret", "Registrert i MVA-registeret"]]
 
-# Filtrerer på næringskoder
-enheter = df2[(df2["Næringskode 1"].between("86.1", "86.2")) | (df2["Næringskode 1"].between("87.1", "87.2"))]
+# Konverterer datatype i alle kolonner til string
+df3 = df2.astype(str)
+
+# Liste med næringskoder for å sortere
+searchfor = ["86.107","86.101","87.200"]
+
+# Dataframe med filtrering på næringskoder i liste
+enheter = df3[df3['Næringskode 1'].str.contains('|'.join(searchfor))]
 
 #Skriver til CSV (NOTE: MÅ OPPDATERE LOKAL PATH)
 #import os  
