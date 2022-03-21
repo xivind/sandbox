@@ -1,18 +1,35 @@
-import requests
+"""Code to retrieve and parse data from Enhetsregisteret"""
+#!/usr/bin/python3
+
+from os.path import exists
 from xlsx2csv import Xlsx2csv
 import pandas as pd
 import numpy as np
+import requests
 
-# Laster ned xlsx-fil med alle enheter i enhetsregisteret
-url = 'https://data.brreg.no/enhetsregisteret/api/enheter/lastned/regneark'
-headers = {'Accept': 'application/vnd.brreg.enhetsregisteret.enhet+vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8'}
-session = requests.Session() # establish a session that is kept open during the transfer, instead of performing separate requests
-r = session.get(url, headers=headers, stream = True)
-r.raise_for_status()
- 
-with open('er.xlsx','wb') as f:
-    for chunk in r.iter_content(1024*1024*2): # laster ned og skriver ca 2 MB av gangen
-        f.write(chunk)
+
+OUTFILE = 'out.csv'
+
+file_exists = exists(OUTFILE)
+
+if file_exists == True:
+         print("File exists")
+else: 
+        print("no exist")
+
+
+
+def get_dataset():
+        # Laster ned xlsx-fil med alle enheter i enhetsregisteret
+        url = 'https://data.brreg.no/enhetsregisteret/api/enheter/lastned/regneark'
+        headers = {'Accept': 'application/vnd.brreg.enhetsregisteret.enhet+vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8'}
+        session = requests.Session() # establish a session that is kept open during the transfer, instead of performing separate requests
+        r = session.get(url, headers=headers, stream = True)
+        r.raise_for_status()
+
+        with open('er.xlsx','wb') as f:
+                for chunk in r.iter_content(1024*1024*2): # laster ned og skriver ca 2 MB av gangen
+                        f.write(chunk)
 
 # Konverterer til CSV        
 Xlsx2csv("er.xlsx", outputencoding="utf-8").convert("er.csv")
@@ -75,7 +92,5 @@ searchfor = ["86.107","86.101","87.200"]
 # Dataframe med filtrering på næringskoder i liste
 enheter = df3[df3['Næringskode 1'].str.contains('|'.join(searchfor))]
 
-#Skriver til CSV (NOTE: MÅ OPPDATERE LOKAL PATH)
-#import os  
-#os.makedirs('folder/subfolder', exist_ok=True)  
-enheter.to_csv('out.csv') 
+#Skriver ut CSV
+enheter.to_csv(OUTFILE) 
