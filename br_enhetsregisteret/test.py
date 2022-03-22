@@ -8,6 +8,7 @@ from xlsx2csv import Xlsx2csv
 import pandas as pd
 import numpy as np
 import requests
+from icecream import ic
 
 
 OUTFILE = "out.csv"
@@ -16,6 +17,7 @@ NACE_CODES = "86.1, 86.10, 86.101, 86.102, 86.103, 86.104"
 #NACE_CODES = "86.1, 86.10, 86.101, 86.102, 86.103, 86.104, 86.105, 86.106, 86.107, 86.2, 86.21, 86.211, 86.212, 86.22, 86.221, 86.222, 86.223, 86.224, 86.225, 86.23, 86.230, 86.9, 86.90, 86.901, 86.902, 86.903, 86.904, 86.905, 86.906, 86.907, 87, 87.1, 87.10, 87.101, 87.102, 87.2, 87.20, 87.201, 87.202, 87.203, 87.3, 87.30, 87.301, 87.302, 87.303, 87.304, 87.305, 87.9, 87.90, 87.901, 87.909"
 
 def get_overview():
+    ic()
     datainfo = requests.get(f'https://data.brreg.no/enhetsregisteret/api/enheter?naeringskode={NACE_CODES}&page=0', headers=requests.utils.default_headers()).json()
     print(f'Treff på for næringskode(r) {NACE_CODES}:')
     print(f'Totalt antall elementer: {datainfo.get("page").get("totalElements")}, totalt antall sider: {datainfo.get("page").get("totalPages")}')
