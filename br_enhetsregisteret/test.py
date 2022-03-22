@@ -1,23 +1,23 @@
 """Code to retrieve and parse data from Enhetsregisteret"""
 #!/usr/bin/python3
 
-#from lib2to3.pytree import convert Vurder å fjerne denne
 import os
 from datetime import datetime
 from os.path import exists
-from br_enhetsregisteret.api_stovsuger import NACE_CODES
 from xlsx2csv import Xlsx2csv
 import pandas as pd
 import numpy as np
 import requests
 
 
-
+OUTFILE = "out.csv"
 FULLDATASET = 'er.xslx'
-NACE_CODES = ""
+NACE_CODES = "86.1, 86.10, 86.101, 86.102, 86.103, 86.104"
+#NACE_CODES = "86.1, 86.10, 86.101, 86.102, 86.103, 86.104, 86.105, 86.106, 86.107, 86.2, 86.21, 86.211, 86.212, 86.22, 86.221, 86.222, 86.223, 86.224, 86.225, 86.23, 86.230, 86.9, 86.90, 86.901, 86.902, 86.903, 86.904, 86.905, 86.906, 86.907, 87, 87.1, 87.10, 87.101, 87.102, 87.2, 87.20, 87.201, 87.202, 87.203, 87.3, 87.30, 87.301, 87.302, 87.303, 87.304, 87.305, 87.9, 87.90, 87.901, 87.909"
 
 def get_overview():
     datainfo = requests.get(f'https://data.brreg.no/enhetsregisteret/api/enheter?naeringskode={NACE_CODES}&page=0', headers=requests.utils.default_headers()).json()
+    print(f'Treff på for næringskode(r) {NACE_CODES}:')
     print(f'Totalt antall elementer: {datainfo.get("page").get("totalElements")}, totalt antall sider: {datainfo.get("page").get("totalPages")}')
 
 
@@ -95,36 +95,40 @@ def prepare_dataframe():
 
     # Dataframe med filtrering på næringskoder i liste
     enheter = df3[df3['Næringskode 1'].str.contains('|'.join(searchfor))]
+    return enheter
     
 
-def write_dataframe_to_csv():
+def write_dataframe_to_csv(dump):
     print("Skriver dataframe til csv...")
-    enheter.to_csv(OUTFILE) 
-    
+    dump.to_csv(OUTFILE) 
+
+#Program starts here    
 get_overview()
-#Vise kun overview eller laste ned?
+user_input = input("Vil du lagre spørringens innhold? (J/N): ")
+if user_input == "J":
+    if exists(FULLDATASET) == True:
+        print("Enhetsregisteret allerede lastet ned, versjon på disk:")
+        print(f'Filnavn: {FULLDATASET} - Opprettet: {datetime.utcfromtimestamp(os.path.getctime(FULLDATASET)).strftime("%Y-%m-%d %H:%M:%S")}')
+        user_input = input("Vil du laste ned på nytt? (J/N): ")
+        if user_input == "J":
+            print("Laster ned fullt datasett på nytt")
+            prepare_full_dataset()
+        elif user_input == "N":
+            print("Bruker eksisterende datasett")
+        else:
+            print("Vennligst følg anvisningene..")
+            quit()
 
-
-if exists(FULLDATASET) == True:
-    print("Enhetsregisteret allerede lastet ned, versjon på disk:")
-    print(f'Filnavn: {FULLDATASET} - Opprettet: {datetime.utcfromtimestamp(os.path.getctime(FULLDATASET)).strftime("%Y-%m-%d %H:%M:%S")}')
-    user_input = input("Vil du laste ned på nytt (J/N): ")
-    if user_input == "J":
-        print("Laster ned fullt datasett på nytt")
+    if exists(FULLDATASET) == False:
+        print("Fant ikke fullt datasett")
         prepare_full_dataset()
-    elif user_input == "N":
-        print("Bruker eksisterende datasett")
-    else:
-        print("Vennligst følg anvisningene..")
-        quit()
 
-if exists(FULLDATASET) == False:
-    print("Fant ikke fullt datasett")
-    prepare_full_dataset()
+    data = prepare_dataframe()
 
-prepare_dataframe()
+    write_dataframe_to_csv(data)
 
-write_dataframe_to_csv()
-
-
-
+elif user_input == "N":
+    print("Program stoppet")
+else:
+    print("Vennligst følg anvisningene..")
+    quit()
