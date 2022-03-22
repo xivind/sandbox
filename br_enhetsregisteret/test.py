@@ -5,6 +5,7 @@
 import os
 from datetime import datetime
 from os.path import exists
+from br_enhetsregisteret.api_stovsuger import NACE_CODES
 from xlsx2csv import Xlsx2csv
 import pandas as pd
 import numpy as np
@@ -13,8 +14,13 @@ import requests
 
 
 FULLDATASET = 'er.xslx'
+NACE_CODES = ""
 
- 
+def get_overview():
+    datainfo = requests.get(f'https://data.brreg.no/enhetsregisteret/api/enheter?naeringskode={NACE_CODES}&page=0', headers=requests.utils.default_headers()).json()
+    print(f'Totalt antall elementer: {datainfo.get("page").get("totalElements")}, totalt antall sider: {datainfo.get("page").get("totalPages")}')
+
+
 def prepare_full_dataset():
     url = 'https://data.brreg.no/enhetsregisteret/api/enheter/lastned/regneark'
     headers = {'Accept': 'application/vnd.brreg.enhetsregisteret.enhet+vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8'}
@@ -95,6 +101,9 @@ def write_dataframe_to_csv():
     print("Skriver dataframe til csv...")
     enheter.to_csv(OUTFILE) 
     
+get_overview()
+#Vise kun overview eller laste ned?
+
 
 if exists(FULLDATASET) == True:
     print("Enhetsregisteret allerede lastet ned, versjon på disk:")
