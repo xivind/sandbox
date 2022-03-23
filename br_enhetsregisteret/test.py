@@ -11,9 +11,10 @@ import requests
 from icecream import ic
 
 
+#DEUBG = YES
 OUTFILE = "out.csv"
-FULLDATASET = 'er.xslx'
-NACE_CODES = "86.1, 86.10, 86.101, 86.102, 86.103, 86.104"
+FULLDATASET = "er.xlsx"
+NACE_CODES = "86.101, 86.102, 86.103, 86.104"
 #NACE_CODES = "86.1, 86.10, 86.101, 86.102, 86.103, 86.104, 86.105, 86.106, 86.107, 86.2, 86.21, 86.211, 86.212, 86.22, 86.221, 86.222, 86.223, 86.224, 86.225, 86.23, 86.230, 86.9, 86.90, 86.901, 86.902, 86.903, 86.904, 86.905, 86.906, 86.907, 87, 87.1, 87.10, 87.101, 87.102, 87.2, 87.20, 87.201, 87.202, 87.203, 87.3, 87.30, 87.301, 87.302, 87.303, 87.304, 87.305, 87.9, 87.90, 87.901, 87.909"
 
 def get_overview():
@@ -31,7 +32,7 @@ def prepare_full_dataset():
     r.raise_for_status()
 
     print("Laster ned fullt datasett som .xslx")
-    with open('er.xlsx','wb') as f:
+    with open("er.xlsx","wb") as f:
         for chunk in r.iter_content(1024*1024*2): # laster ned og skriver ca 2 MB av gangen
             f.write(chunk)
     
@@ -41,7 +42,7 @@ def prepare_full_dataset():
 def prepare_dataframe():
     print("Gjør klar dataframe...")
 
-    df = pd.read_csv('er.csv', dtype={
+    df = pd.read_csv("er.csv", dtype={
         'Organisasjonsnummer': str,
         'Navn': str,
         'Organisasjonsform.kode': 'category',
@@ -87,16 +88,18 @@ def prepare_dataframe():
         'Målform': 'category' })
 
     # Henter ut relevante kolonner
-    df2 = df[["Organisasjonsnummer", "Navn", 'Organisasjonsform.kode', "Organisasjonsform.beskrivelse", "Næringskode 1", "Næringskode 1.beskrivelse", "Postadresse.adresse", "Postadresse.kommune", "Registreringsdato i Enhetsregisteret", "Registrert i MVA-registeret"]]
+    df2 = df[["Organisasjonsnummer", "Navn", 'Organisasjonsform.kode', "Organisasjonsform.beskrivelse", "Næringskode 1", "Næringskode 1.beskrivelse", "Næringskode 2", "Næringskode 3", "Postadresse.adresse", "Postadresse.kommune", "Registreringsdato i Enhetsregisteret", "Registrert i MVA-registeret"]]
 
     # Konverterer datatype i alle kolonner til string
     df3 = df2.astype(str)
 
     # Liste med næringskoder for å sortere
-    searchfor = ["86.1, 86.10, 86.101, 86.102, 86.103, 86.104, 86.105, 86.106, 86.107, 86.2, 86.21, 86.211, 86.212, 86.22, 86.221, 86.222, 86.223, 86.224, 86.225, 86.23, 86.230, 86.9, 86.90, 86.901, 86.902, 86.903, 86.904, 86.905, 86.906, 86.907, 87, 87.1, 87.10, 87.101, 87.102, 87.2, 87.20, 87.201, 87.202, 87.203, 87.3, 87.30, 87.301, 87.302, 87.303, 87.304, 87.305, 87.9, 87.90, 87.901, 87.909"]
+    searchfor = ["86.101", "86.102", "86.103", "86.104"]
 
     # Dataframe med filtrering på næringskoder i liste
-    enheter = df3[df3['Næringskode 1'].str.contains('|'.join(searchfor))]
+    enheter = df3[df3['Næringskode 1'].str.contains('|'.join(searchfor)) | df3['Næringskode 2'].str.contains('|'.join(searchfor)) | df3['Næringskode 3'].str.contains('|'.join(searchfor))]
+    ic()
+    ic(enheter)
     return enheter
     
 
