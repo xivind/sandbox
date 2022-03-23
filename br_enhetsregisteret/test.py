@@ -97,7 +97,14 @@ def prepare_dataframe():
     searchfor = ["86.101", "86.102", "86.103", "86.104"]
 
     # Dataframe med filtrering på næringskoder i liste
-    enheter = df3[df3['Næringskode 1'].str.contains('|'.join(searchfor)) | df3['Næringskode 2'].str.contains('|'.join(searchfor)) | df3['Næringskode 3'].str.contains('|'.join(searchfor))]
+    nkode1 = df3[df3['Næringskode 1'].str.contains('|'.join(searchfor))]
+    nkode2 = df3[df3['Næringskode 2'].str.contains('|'.join(searchfor))] 
+    nkode3 = df3[df3['Næringskode 3'].str.contains('|'.join(searchfor))]
+    
+    
+    # Use pandas.concat() method to ignore_index 
+    enheter = pd.concat([nkode1, nkode2, nkode3], ignore_index=True, sort=False)
+    
     ic()
     ic(enheter)
     return enheter
