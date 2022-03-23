@@ -88,7 +88,7 @@ def prepare_dataframe():
         'Målform': 'category' })
 
     # Henter ut relevante kolonner
-    df2 = df[["Organisasjonsnummer", "Navn", 'Organisasjonsform.kode', "Organisasjonsform.beskrivelse", "Næringskode 1", "Næringskode 1.beskrivelse", "Næringskode 2", "Næringskode 3", "Postadresse.adresse", "Postadresse.kommune", "Registreringsdato i Enhetsregisteret", "Registrert i MVA-registeret"]]
+    df2 = df[["Organisasjonsnummer", "Navn", 'Organisasjonsform.kode', "Organisasjonsform.beskrivelse", "Næringskode 1", "Næringskode 1.beskrivelse", "Næringskode 2", "Næringskode 3", "Postadresse.adresse", "Postadresse.kommune", "Registreringsdato i Enhetsregisteret"]]
 
     # Konverterer datatype i alle kolonner til string
     df3 = df2.astype(str)
@@ -98,9 +98,12 @@ def prepare_dataframe():
 
     # Dataframe med filtrering på næringskoder i liste
     nkode1 = df3[df3['Næringskode 1'].str.contains('|'.join(searchfor))]
-    nkode2 = df3[df3['Næringskode 2'].str.contains('|'.join(searchfor))] 
+    nkode2 = df3[df3['Næringskode 2'].str.contains('|'.join(searchfor))]
     nkode3 = df3[df3['Næringskode 3'].str.contains('|'.join(searchfor))]
     
+    ic(nkode1)
+    ic(nkode2)
+    ic(nkode3)
     
     # Use pandas.concat() method to ignore_index 
     enheter = pd.concat([nkode1, nkode2, nkode3], ignore_index=True, sort=False)
