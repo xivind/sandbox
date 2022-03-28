@@ -9,13 +9,17 @@ import pandas as pd
 import numpy as np
 import requests
 import gzip
+import shutil
+import wget
 from icecream import ic
-
+from pandas.io.json import json_normalize
+import json
 
 #DEUBG = YES
 OUTFILE = "out.csv"
-FULLDATASET = "er.xlsx"
-NACE_CODES = "86.101, 86.102, 86.103, 86.104"
+FULLDATASET = "enheter_alle.json.gz"
+#NACE_CODES = "86.101, 86.102, 86.103, 86.104"
+NACE_CODES = "86.104"
 #NACE_CODES = "86.1, 86.10, 86.101, 86.102, 86.103, 86.104, 86.105, 86.106, 86.107, 86.2, 86.21, 86.211, 86.212, 86.22, 86.221, 86.222, 86.223, 86.224, 86.225, 86.23, 86.230, 86.9, 86.90, 86.901, 86.902, 86.903, 86.904, 86.905, 86.906, 86.907, 87, 87.1, 87.10, 87.101, 87.102, 87.2, 87.20, 87.201, 87.202, 87.203, 87.3, 87.30, 87.301, 87.302, 87.303, 87.304, 87.305, 87.9, 87.90, 87.901, 87.909"
 
 def get_overview():
@@ -26,23 +30,28 @@ def get_overview():
 
 
 def prepare_full_dataset():
-    url = 'https://data.brreg.no/enhetsregisteret/api/enheter/lastned'
-    headers = {'Accept: application/vnd.brreg.enhetsregisteret.enhet.v1+gzip;charset=UTF-8'}
-    
-    session = requests.Session() # establish a session that is kept open during the transfer, instead of performing separate requests
-    r = session.get(url, headers=headers, stream = True)
-    r.raise_for_status()
+    ic()
+    url = 'https://data.brreg.no/enhetsregisteret/api/enheter/lastned/'
+    print("Laster ned fullt datasett som .json")
+    filename = wget.download(url)
 
-    print("Laster ned fullt datasett som .xslx")
-    with open("er.json","wb") as f:
-        for chunk in r.iter_content(1024*1024*2): # laster ned og skriver ca 2 MB av gangen
-            f.write(chunk)
-
-   #GZIP here
-    
+    with gzip.open(filename, "rb") as f_in:
+        with open("er.json", "wb") as f_out:
+            shutil.copyfileobj(f_in, f_out)
+      
     print("Konverterer fullt datasett til csv...")
-    df = pd.read_json (r"er.json")
-    df.to_csv (r"er.csv", index = None)
+    f = open('er.json') # open the json file
+    data = json.load(f) # load as json
+    f.close()
+
+    df = json_normalize(data['features']) #load json into dataframe
+    df.to_csv('er.csv', sep=',', encoding='utf-8') #save as csv
+    
+    
+    
+    #df = pd.read_json (r'er.json')
+    #print("Leste inn json, skriver til csv")
+    #df.to_csv (r'er.csv', index = None)
     
 def prepare_dataframe():
     print("Gjør klar dataframe...")

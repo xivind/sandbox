@@ -37,11 +37,15 @@ def prepare_full_dataset():
             f.write(chunk)
     
     print("Konverterer fullt datasett til csv...")
+    #read_file = pd.read_excel ('er.xlsx', dtype=str, index_col=None, engine="openpyxl")
+    #read_file.to_csv ('er.csv', index = None, header=True, encoding='utf-8')
     Xlsx2csv("er.xlsx", outputencoding="utf-8").convert("er.csv")
     
 def prepare_dataframe():
     print("Gjør klar dataframe...")
+    df = pd.read_csv('er.csv')
 
+    """
     df = pd.read_csv("er.csv", dtype={
         'Organisasjonsnummer': str,
         'Navn': str,
@@ -86,10 +90,10 @@ def prepare_dataframe():
         'Under tvangsavvikling eller tvangsoppløsning': 'category',
         'Overordnet enhet i offentlig sektor': str,
         'Målform': 'category' })
-
+    """
     # Henter ut relevante kolonner
-    df2 = df[["Organisasjonsnummer", "Navn", 'Organisasjonsform.kode', "Organisasjonsform.beskrivelse", "Næringskode 1", "Næringskode 1.beskrivelse", "Næringskode 2", "Næringskode 3", "Postadresse.adresse", "Postadresse.kommune", "Registreringsdato i Enhetsregisteret"]]
-
+    #df2 = df[["Organisasjonsnummer", "Navn", 'Organisasjonsform.kode', "Organisasjonsform.beskrivelse", "Næringskode 1", "Næringskode 1.beskrivelse", "Næringskode 2", "Næringskode 3", "Postadresse.adresse", "Postadresse.kommune", "Registreringsdato i Enhetsregisteret"]]
+    df2 = df[["Næringskode 1","Næringskode 2", "Næringskode 3"]]
     # Konverterer datatype i alle kolonner til string
     df3 = df2.astype(str)
 
