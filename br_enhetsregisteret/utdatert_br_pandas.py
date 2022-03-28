@@ -1,12 +1,14 @@
 """Code to retrieve and parse data from Enhetsregisteret"""
 #!/usr/bin/python3
 
-from os.path import exists
-from xlsx2csv import Xlsx2csv
+from os.path import exist
 import pandas as pd
 import numpy as np
 import requests
-
+import urllib.request
+import gzip
+import io
+import json
 
 """
 OUTFILE = 'out.csv'
@@ -22,79 +24,33 @@ else:
 
 def get_dataset():
 
+# Hente ut data fra BRREG
+url_get = 'https://data.brreg.no/enhetsregisteret/api/enheter/lastned'
+with urllib.request.urlopen(url_get) as response:
+    encoding = response.info().get_param('charset', 'utf8')
+    compressed_file = io.BytesIO(response.read())
+    decompressed_file = gzip.decompress(compressed_file.read())
+    json_str = json.loads(decompressed_file.decode('utf-8'))
 
-
-# Laster ned xlsx-fil med alle enheter i enhetsregisteret
-url = 'https://data.brreg.no/enhetsregisteret/api/enheter/lastned/regneark'
-headers = {'Accept': 'application/vnd.brreg.enhetsregisteret.enhet+vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8'}
-session = requests.Session() # establish a session that is kept open during the transfer, instead of performing separate requests
-r = session.get(url, headers=headers, stream = True)
-r.raise_for_status()
-
-with open('er.xlsx','wb') as f:
-for chunk in r.iter_content(1024*1024*2): # laster ned og skriver ca 2 MB av gangen
-f.write(chunk)
-
-# Konverterer til CSV        
-Xlsx2csv("er.xlsx", outputencoding="utf-8").convert("er.csv")
-
-# Lager pandas dataframe 
-df = pd.read_csv('er.csv', dtype={
-        'Organisasjonsnummer': str,
-        'Navn': str,
-        'Organisasjonsform.kode': 'category',
-        'Organisasjonsform.beskrivelse': 'category',
-        'Næringskode 1': str,
-        'Næringskode 1.beskrivelse': str,
-        'Næringskode 2': str,
-        'Næringskode 2.beskrivelse': str,
-        'Næringskode 3': str,
-        'Næringskode 3.beskrivelse': str,
-        'Hjelpeenhetskode': 'category',
-        'Hjelpeenhetskode.beskrivelse': 'category',
-        'Antall ansatte': np.int16,
-        'Hjemmeside': str,
-        'Postadresse.adresse': str,
-        'Postadresse.poststed': str,
-        'Postadresse.postnummer': str,
-        'Postadresse.kommune': str,
-        'Postadresse.kommunenummer': str,
-        'Postadresse.land': 'category',
-        'Postadresse.landkode': 'category',
-        'Forretningsadresse.adresse': str,
-        'Forretningsadresse.poststed': str,
-        'Forretningsadresse.postnummer': str,
-        'Forretningsadresse.kommune': str,
-        'Forretningsadresse.kommunenummer': str,
-        'Forretningsadresse.land': 'category',
-        'Forretningsadresse.landkode': 'category',
-        'Institusjonell sektorkode': 'category',
-        'Institusjonell sektorkode.beskrivelse': 'category',
-        'Siste innsendte årsregnskap': str, # klarte ikke konvertere til np.int16
-        'Registreringsdato i Enhetsregisteret': str, # klarer ikke konvertere 'datetime64',
-        'Stiftelsesdato': str, # klarte ikke å konvertere til datetime64 - 1550-12-31 00:00:00
-        'FrivilligRegistrertIMvaregisteret': 'category',
-        'Registrert i MVA-registeret': 'category',
-        'Registrert i Frivillighetsregisteret': 'category',
-        'Registrert i Foretaksregisteret': 'category',
-        'Registrert i Stiftelsesregisteret': 'category',
-        'Konkurs': 'category',
-        'Under avvikling': 'category',
-        'Under tvangsavvikling eller tvangsoppløsning': 'category',
-        'Overordnet enhet i offentlig sektor': str,
-        'Målform': 'category' })
+# Lage pandas dataframe av json list
+df2 = pd.json_normalize(json_str) 
 
 # Henter ut relevante kolonner
-df2 = df[["Organisasjonsnummer", "Navn", 'Organisasjonsform.kode', "Organisasjonsform.beskrivelse", "Næringskode 1", "Næringskode 1.beskrivelse", "Postadresse.adresse", "Postadresse.kommune", "Registreringsdato i Enhetsregisteret", "Registrert i MVA-registeret"]]
+df2 = df2[["Organisasjonsnummer", "Navn", 'Organisasjonsform.kode', "Organisasjonsform.beskrivelse", "Næringskode 1", "Næringskode 1.beskrivelse", "Postadresse.adresse", "Postadresse.kommune", "Registreringsdato i Enhetsregisteret", "Registrert i MVA-registeret"]]
 
-# Konverterer datatype i alle kolonner til string
+# Konvertere datatyper til string
 df3 = df2.astype(str)
 
-# Liste med næringskoder for å sortere
-searchfor = ["86.107","86.101","87.200"]
+# Liste med næringskoder for å filtrere
+searchfor = ["86.101", "86.102", "86.103", "86.104"]
 
 # Dataframe med filtrering på næringskoder i liste
-enheter = df3[df3['Næringskode 1'].str.contains('|'.join(searchfor))]
+nkode1 = df3[df3['naeringskode1.kode'].isin(searchfor)]
+nkode2 = df3[df3['naeringskode2.kode'].isin(searchfor)]
+nkode3 = df3[df3['naeringskode3.kode'].isin(searchfor)]
+
+# Use pandas.concat() method to concat dataframes and ignore_index 
+enheter = pd.concat([nkode1, nkode2, nkode3], ignore_index=True, sort=False)
 
 #Skriver ut CSV
 enheter.to_csv(OUTFILE) 
