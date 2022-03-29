@@ -39,14 +39,15 @@ def prepare_full_dataset():
     print("Konverterer fullt datasett til csv...")
     #read_file = pd.read_excel ('er.xlsx', dtype=str, index_col=None, engine="openpyxl")
     #read_file.to_csv ('er.csv', index = None, header=True, encoding='utf-8')
-    Xlsx2csv("er.xlsx", outputencoding="utf-8").convert("er.csv")
+    Xlsx2csv("er.xlsx", outputencoding="utf-8").convert("er1.csv", sheetid=1)
+    Xlsx2csv("er.xlsx", outputencoding="utf-8").convert("er2.csv", sheetid=2)
+
+    
     
 def prepare_dataframe():
     print("Gjør klar dataframe...")
     df = pd.read_csv('er.csv')
-
-    """
-    df = pd.read_csv("er.csv", dtype={
+    df1 = pd.read_csv('er1.csv', dtype={
         'Organisasjonsnummer': str,
         'Navn': str,
         'Organisasjonsform.kode': 'category',
@@ -90,10 +91,58 @@ def prepare_dataframe():
         'Under tvangsavvikling eller tvangsoppløsning': 'category',
         'Overordnet enhet i offentlig sektor': str,
         'Målform': 'category' })
-    """
+    
+    df2 = pd.read_csv('er2.csv', dtype={
+        'Organisasjonsnummer': str,
+        'Navn': str,
+        'Organisasjonsform.kode': 'category',
+        'Organisasjonsform.beskrivelse': 'category',
+        'Næringskode 1': str,
+        'Næringskode 1.beskrivelse': str,
+        'Næringskode 2': str,
+        'Næringskode 2.beskrivelse': str,
+        'Næringskode 3': str,
+        'Næringskode 3.beskrivelse': str,
+        'Hjelpeenhetskode': 'category',
+        'Hjelpeenhetskode.beskrivelse': 'category',
+        'Antall ansatte': np.int16,
+        'Hjemmeside': str,
+        'Postadresse.adresse': str,
+        'Postadresse.poststed': str,
+        'Postadresse.postnummer': str,
+        'Postadresse.kommune': str,
+        'Postadresse.kommunenummer': str,
+        'Postadresse.land': 'category',
+        'Postadresse.landkode': 'category',
+        'Forretningsadresse.adresse': str,
+        'Forretningsadresse.poststed': str,
+        'Forretningsadresse.postnummer': str,
+        'Forretningsadresse.kommune': str,
+        'Forretningsadresse.kommunenummer': str,
+        'Forretningsadresse.land': 'category',
+        'Forretningsadresse.landkode': 'category',
+        'Institusjonell sektorkode': 'category',
+        'Institusjonell sektorkode.beskrivelse': 'category',
+        'Siste innsendte årsregnskap': str, # klarte ikke konvertere til np.int16
+        'Registreringsdato i Enhetsregisteret': str, # klarer ikke konvertere 'datetime64',
+        'Stiftelsesdato': str, # klarte ikke å konvertere til datetime64 - 1550-12-31 00:00:00
+        'FrivilligRegistrertIMvaregisteret': 'category',
+        'Registrert i MVA-registeret': 'category',
+        'Registrert i Frivillighetsregisteret': 'category',
+        'Registrert i Foretaksregisteret': 'category',
+        'Registrert i Stiftelsesregisteret': 'category',
+        'Konkurs': 'category',
+        'Under avvikling': 'category',
+        'Under tvangsavvikling eller tvangsoppløsning': 'category',
+        'Overordnet enhet i offentlig sektor': str,
+        'Målform': 'category' })
+    
+    # Use pandas.concat() method to get one dataframe from both sheets 
+    df = pd.concat([df1, df2], ignore_index=True, sort=False)
+   
     # Henter ut relevante kolonner
-    #df2 = df[["Organisasjonsnummer", "Navn", 'Organisasjonsform.kode', "Organisasjonsform.beskrivelse", "Næringskode 1", "Næringskode 1.beskrivelse", "Næringskode 2", "Næringskode 3", "Postadresse.adresse", "Postadresse.kommune", "Registreringsdato i Enhetsregisteret"]]
-    df2 = df[["Næringskode 1","Næringskode 2", "Næringskode 3"]]
+    df2 = df[["Organisasjonsnummer", "Navn", 'Organisasjonsform.kode', "Organisasjonsform.beskrivelse", "Næringskode 1", "Næringskode 1.beskrivelse", "Næringskode 2", "Næringskode 3", "Postadresse.adresse", "Postadresse.kommune", "Registreringsdato i Enhetsregisteret"]]
+    #df2 = df[["Næringskode 1","Næringskode 2", "Næringskode 3"]]
     # Konverterer datatype i alle kolonner til string
     df3 = df2.astype(str)
 
