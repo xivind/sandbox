@@ -159,11 +159,10 @@ def prepare_dataframe():
     ic(nkode3)
     
     # Use pandas.concat() method to ignore_index 
-    enheter = pd.concat([nkode1, nkode2, nkode3], ignore_index=True, sort=False)
+    enheter = pd.concat([nkode1, nkode2, nkode3], ignore_index=True, sort=False).drop_duplicates(subset=['Organisasjonsnummer'])
     
     ic()
     ic(enheter)
-    enheter = enheter.drop_duplicates()
     return enheter
     
 
