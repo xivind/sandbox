@@ -31,7 +31,7 @@ def prepare_full_dataset():
     r = session.get(url, headers=headers, stream = True)
     r.raise_for_status()
 
-    print("Laster ned fullt datasett som .xslx")
+    print("Laster ned fullt datasett som .xlsx")
     with open("er.xlsx","wb") as f:
         for chunk in r.iter_content(1024*1024*2): # laster ned og skriver ca 2 MB av gangen
             f.write(chunk)
@@ -46,7 +46,7 @@ def prepare_full_dataset():
     
 def prepare_dataframe():
     print("Gjør klar dataframe...")
-    df = pd.read_csv('er.csv')
+    #df = pd.read_csv('er.csv')
     df1 = pd.read_csv('er1.csv', dtype={
         'Organisasjonsnummer': str,
         'Navn': str,
@@ -163,6 +163,7 @@ def prepare_dataframe():
     
     ic()
     ic(enheter)
+    enheter = enheter.drop_duplicates()
     return enheter
     
 

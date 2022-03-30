@@ -1,7 +1,7 @@
 """Code to retrieve and parse data from Enhetsregisteret"""
 #!/usr/bin/python3
 
-from os.path import exist
+#from os.path import exist
 import pandas as pd
 import numpy as np
 import requests
@@ -9,6 +9,38 @@ import urllib.request
 import gzip
 import io
 import json
+import ijson
+import icecream as ic
+import wget
+import shutil
+
+
+
+"""
+url = 'https://data.brreg.no/enhetsregisteret/api/enheter/lastned/'
+print("Laster ned fullt datasett som .json")
+filename = wget.download(url)
+
+with gzip.open(filename, "rb") as f_in:
+    with open("er.json", "wb") as f_out:
+        shutil.copyfileobj(f_in, f_out)
+
+"""
+f = open("er.json")
+objects = ijson.items(f, '_embedded.enheter.item')
+cities = (o for o in objects if o['type'] == 'navn')
+for city in cities:
+    print(city)
+
+
+
+
+
+
+
+
+
+
 
 """
 OUTFILE = 'out.csv'
@@ -22,8 +54,8 @@ else:
 """
 
 
-def get_dataset():
 
+"""
 # Hente ut data fra BRREG
 url_get = 'https://data.brreg.no/enhetsregisteret/api/enheter/lastned'
 with urllib.request.urlopen(url_get) as response:
@@ -31,6 +63,7 @@ with urllib.request.urlopen(url_get) as response:
     compressed_file = io.BytesIO(response.read())
     decompressed_file = gzip.decompress(compressed_file.read())
     json_str = json.loads(decompressed_file.decode('utf-8'))
+
 
 # Lage pandas dataframe av json list
 df2 = pd.json_normalize(json_str) 
@@ -54,3 +87,4 @@ enheter = pd.concat([nkode1, nkode2, nkode3], ignore_index=True, sort=False)
 
 #Skriver ut CSV
 enheter.to_csv(OUTFILE) 
+"""
