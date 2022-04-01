@@ -6,7 +6,7 @@ import requests
 from icecream import ic
 
 PAGECOUNTER = 0
-NACE_CODES = "86.1, 87.1" #Oppgi liste med komma mellom verdier
+NACE_CODES = "86, 87, 88" #Oppgi liste med komma mellom verdier
 JSON_DUMP = dict()
 
 def read_parameters():
