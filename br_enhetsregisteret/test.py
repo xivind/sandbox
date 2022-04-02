@@ -70,6 +70,9 @@ def prepare_subset():
     # Use pandas.concat() method to ignore_index 
     utvalg = pd.concat([nkode1, nkode2, nkode3], ignore_index=True, sort=False).drop_duplicates(subset=['Organisasjonsnummer'])
     
+    print(utvalg.groupby('Næringskode 1.beskrivelse')['Næringskode 1.beskrivelse'].count())
+    print(utvalg.groupby('Organisasjonsform.beskrivelse')['Organisasjonsform.beskrivelse'].count())
+    
     ic()
     ic(utvalg)
     return utvalg
