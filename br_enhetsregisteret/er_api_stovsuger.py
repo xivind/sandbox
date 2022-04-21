@@ -1,4 +1,4 @@
-"""Code to retrieve and parse data from Enhetsregisteret"""
+"""Kode for å hente overordnede enheter fra Enhetsregisteret"""
 #!/usr/bin/python3
 
 import json
@@ -6,7 +6,7 @@ import requests
 from icecream import ic
 
 PAGECOUNTER = 0
-NACE_CODES = "86, 87, 88" #Oppgi liste med komma mellom verdier
+NACE_CODES = "86, 87, 88"
 JSON_DUMP = dict()
 
 def read_parameters():

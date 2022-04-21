@@ -1,4 +1,4 @@
-"""Code to retrieve data from Enhetsregisteret and prepare CSV for ingest"""
+"""Kode for å hente hovedenheter fra Enhetsregisteret og gjøre klar CSV for analyse"""
 #!/usr/bin/python3
 
 import os
@@ -13,7 +13,7 @@ from icecream import ic
 ic.disable()
 
 NACE_UTVALG = "86.1,86.2,86.9,87.1,87.2,87.3,87.9,88.1,88.9"
-NACE_SOK = "86.1,86.2,87.1"
+NACE_SOK = "86.101,86.103,87.201"
 ER_FULL_FIL = "er.xlsx"
 ER_UTVALG_FIL = "er_subset.csv"
 ER_SOK_FIL = "er_search_result.csv"
@@ -57,7 +57,7 @@ def lag_utvalg():
     df_fane1 = pd.read_csv('er1.csv')
     df_fane2 = pd.read_csv('er2.csv')
     df_kombinert = pd.concat([df_fane1, df_fane2], ignore_index=True, sort=False)
-    df_kombinert_trimmet = df_kombinert[["Organisasjonsnummer", "Navn", 'Organisasjonsform.kode', "Organisasjonsform.beskrivelse", "Næringskode 1", "Næringskode 1.beskrivelse", "Næringskode 2", "Næringskode 2.beskrivelse", "Næringskode 3", "Næringskode 3.beskrivelse", "Postadresse.adresse", "Postadresse.kommune", "Registreringsdato i Enhetsregisteret"]]
+    df_kombinert_trimmet = df_kombinert[["Organisasjonsnummer", "Navn", 'Organisasjonsform.kode', "Organisasjonsform.beskrivelse", "Næringskode 1", "Næringskode 1.beskrivelse", "Næringskode 2", "Næringskode 2.beskrivelse", "Næringskode 3", "Næringskode 3.beskrivelse", "Postadresse.adresse", "Postadresse.kommune", "Registreringsdato i Enhetsregisteret", "Antall ansatte"]]
     df_utvalg = df_kombinert_trimmet.astype(str)
  
     sok_etter = list(NACE_UTVALG.split(","))
@@ -76,7 +76,7 @@ def lag_utvalg():
 
 def lag_sokeresultat():
     ic()
-    print("Gjør klar utvalg...")
+    print("Gjør klar søkeresultat...")
     df_utvalg = pd.read_csv(ER_UTVALG_FIL)
     df_utvalg = df_utvalg.astype(str)
  
@@ -99,40 +99,29 @@ def lag_sokeresultat():
 def vis_statistikk(data):
     ic()
     print("Viser statistikk...")
-    print(data.groupby('Næringskode 1.beskrivelse')['Næringskode 1.beskrivelse'].count())
-    print(data.groupby('Organisasjonsform.beskrivelse')['Organisasjonsform.beskrivelse'].count())
+    print(data.info())
+    print(data['Organisasjonsform.beskrivelse'].value_counts())
+    #print(data.groupby('Næringskode 1.beskrivelse')['Næringskode 1.beskrivelse'].count())
+    #print(data.groupby('Organisasjonsform.beskrivelse')['Organisasjonsform.beskrivelse'].count())
     print(f'Antall enheter i søkeresultat CSV (sjekk mot tall fra API over): {len(data)}')
     
 #Program starts here
 sjekk_api()
-user_input = input("Lagre spørringens innhold? (J/N): ")
-if user_input == "J":
-    if exists(ER_FULL_FIL) == True:
-        print(f'Bruker Enhetsregisteret lasted ned {datetime.utcfromtimestamp(os.path.getctime(ER_FULL_FIL)).strftime("%Y-%m-%d %H:%M:%S")}')
+if exists(ER_FULL_FIL) == True:
+    print(f'Bruker Enhetsregisteret lasted ned {datetime.utcfromtimestamp(os.path.getctime(ER_FULL_FIL)).strftime("%Y-%m-%d %H:%M:%S")}')
     
-        if exists(ER_UTVALG_FIL) == True:
-            user_input = input(f'Bruke eksisterende grovutvalg: {NACE_UTVALG} ? (opprettet {datetime.utcfromtimestamp(os.path.getctime(ER_UTVALG_FIL)).strftime("%Y-%m-%d %H:%M:%S")}) (J/N)')
-            if user_input == "N":
-                lag_utvalg()
-                resultat = lag_sokeresultat()
-                vis_statistikk(resultat)
+    if exists(ER_UTVALG_FIL) == True:
+        print(f'Bruker grovutvalg laget {datetime.utcfromtimestamp(os.path.getctime(ER_UTVALG_FIL)).strftime("%Y-%m-%d %H:%M:%S")}')
+        resultat = lag_sokeresultat()
+        vis_statistikk(resultat)
             
-            elif user_input == "J":
-                print("Bruker eksisterende grovutvalg..")
-                resultat = lag_sokeresultat()
-                vis_statistikk(resultat)
-                        
-            else:
-                print("Vennligst følg anvisningene..")
-                quit()
+    if exists(ER_UTVALG_FIL) == False:
+        print("Fant ikke utvalgsfil")
+        lag_utvalg()
+        resultat = lag_sokeresultat()
+        vis_statistikk(resultat)
         
-    if exists(ER_FULL_FIL) == False:
+elif exists(ER_FULL_FIL) == False:
         hent_er()
         resultat = lag_sokeresultat()
         vis_statistikk(resultat)
-    
-    else:
-        print("Program avsluttet")
-
-else:
-    print("Program avsluttet")
