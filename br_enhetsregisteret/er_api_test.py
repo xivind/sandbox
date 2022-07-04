@@ -3,10 +3,10 @@
 
 import json
 import requests
-from icecream import ic
+#from icecream import ic
 
 PAGECOUNTER = 0
-NACE_CODES = "86, 87, 88"
+NACE_CODES = "86.1, 87.1"
 JSON_DUMP = dict()
 
 def read_parameters():
@@ -50,4 +50,5 @@ while PAGECOUNTER < totalpages:
     PAGECOUNTER = PAGECOUNTER+1
 
 print("Skriver til fil..")
+print(JSON_DUMP)
 dump_exportobject(JSON_DUMP)
