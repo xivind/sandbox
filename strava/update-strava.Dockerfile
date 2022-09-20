@@ -2,7 +2,7 @@
 
 # First stage
 FROM python:3.9 AS builder
-COPY requirements.txt .
+COPY update-strava-requirements.txt requirements.txt
 
 # Install dependencies to the local user directory
 RUN pip3 install --user -r requirements.txt
@@ -13,7 +13,7 @@ WORKDIR /code
 
 # Copy only files needed for the application to be run within the container and the source files
 COPY --from=builder /root/.local /root/.local
-COPY send-strava.py .
+COPY update_strava.py .
 
 # Update PATH
 ENV PATH=/root/.local:$PATH
