@@ -129,7 +129,7 @@ class Strava:
                         variables = {"name": "Bysykling",
                                 "commute": True,
                                 "gear_id": "b3450507",
-                                "description": "Auto-updated" #User defined comment
+                                "description": "Auto-updated"
                         }
                         print("Information to be updated in activity:")
                         pprint(variables, indent=4)
@@ -189,10 +189,15 @@ class Controller:
                 strava.get_activities()
                 strava.process_activites()
                 print(f'\n{current_time()}: Next program run in 120 minutes...')
+                print("\n")
+                strava.counter_updated = 0
+                strava.counter_skipped = 0
+                strava.counter_failed = 0
                 strava.process_broken = False
             except Exception:
                 print(f'{current_time()}: An unexpected error occured during main loop. Info about the error:')
                 traceback.print_exc()
+                print("\n")
             finally:
                 time.sleep(7200)
 
