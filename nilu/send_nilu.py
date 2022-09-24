@@ -1,117 +1,28 @@
-"""Code to retrieve data from Nilu and publish it on a Mosquitto broker"""
-#!/usr/bin/python3
+#!/usr/bin/env python3
+"""Module to retrieve data from Nilu and publish it on a Mosquitto broker"""
 
-import traceback
 import json
-import datetime
-import time
 import argparse
+import datetime
+import traceback
+import time
+from pprint import pprint
 import requests
 import paho.mqtt.client
-from icecream import ic
 
-
-class System:
-    """Class for Raspberry Pi"""
-
-    def get_serial_number(self):
-        """Get Raspberry Pi serial number to use as ID"""
-        serial = ""
-        try:
-            with open("/proc/cpuinfo", "r") as file:
-                for line in file:
-                    if line[0:6] == "Serial":
-                        serial = line.split(":")[1].strip()
-            ic(serial)
-            return serial
-
-        except Exception:
-            serial = "0"
-            return serial
-
-
-class HttpRequest:
-    """Class to handle http requests"""
+class Nilu:
+    """Class for Nilu. Handles authentication and requests"""
 
     def __init__(self, user_agent):
         self.user_agent = user_agent
         self.headers = requests.utils.default_headers()
         self.headers.update(
             {'User-Agent': f'Private use only - {self.user_agent}'})
+        self.raw_response = dict()
 
     def get_data(self, url):
         """Method to make a http request and return a raw response"""
-        http_response_raw = requests.get(url, headers=self.headers).json()
-        ic()
-        ic(http_response_raw)
-        return http_response_raw
-
-
-class Data:
-    """Class to handle data objects"""
-
-    def __init__(self):
-        self.transformed_data = dict()
-        self.prepared_message = dict()
-        self.serial = ""
-
-    def store_serial(self, serial):
-        """Method to store serial number of pi"""
-        self.serial = serial
-
-    def transform_data(self, data_to_transform):
-        """
-        Method to transform data from Nilu
-        See for reference:
-        https://luftkvalitet.miljodirektoratet.no/maalestasjon/Kirkeveien
-        https://api.nilu.no/
-        https://www.eea.europa.eu/themes/air/air-quality/resources/air-quality-map-thresholds#toc-13
-        """
-
-        self.transformed_data.clear()
-
-        for dictionaries in data_to_transform:
-
-            for keys in dictionaries.keys():
-
-                if dictionaries[keys] == "PM10":
-                    self.transformed_data.update(
-                        {"airquality_pm10": dictionaries["value"]})
-                    ic()
-                    ic(self.transformed_data["airquality_pm10"])
-
-                if dictionaries[keys] == "PM2.5":
-                    self.transformed_data.update(
-                        {"airquality_pm25": dictionaries["value"]})
-                    ic()
-                    ic(self.transformed_data["airquality_pm25"])
-
-                if dictionaries[keys] == "NO2":
-                    self.transformed_data.update(
-                        {"airquality_no2": dictionaries["value"]})
-                    ic()
-                    ic(self.transformed_data["airquality_no2"])
-
-        ic()
-        ic(self.transformed_data)
-
-    def validate_data(self, unvalidated_data):
-        """Method to check that payload contains at least one value"""
-        validate_data = unvalidated_data.copy()
-        validate_data.popitem()
-        ic()
-        del validate_data
-
-    def prepare_message(self):
-        """Method to prepare message that will be sent"""
-        self.prepared_message = self.transformed_data
-        self.prepared_message.update({"serial": self.serial})
-        self.prepared_message.update(
-            {"recordTime": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")}
-                                    )
-        ic()
-        ic(self.prepared_message)
-
+        self.raw_response = requests.get(url, headers=self.headers).json()
 
 class Mqtt(paho.mqtt.client.Client):
     """Class to interact with Mosquitto messagebroker"""
@@ -122,14 +33,36 @@ class Mqtt(paho.mqtt.client.Client):
         self.mqtt_port = mqtt_port
         self.mqtt_topic = mqtt_topic
         self.mqtt_client_id = mqtt_client_id
+        self.transformed_data = dict()
+        self.message = ""
+
+    def prepare_message(self, data_to_transform):
+        """Method to prepare message to be sent via a Mosquitto message broker"""
+        self.transformed_data.clear()
+
+        for dictionaries in data_to_transform:
+
+            for keys in dictionaries.keys():
+
+                if dictionaries[keys] == "PM10":
+                    self.transformed_data.update(
+                        {"airquality_pm10": dictionaries["value"]})
+
+                if dictionaries[keys] == "PM2.5":
+                    self.transformed_data.update(
+                        {"airquality_pm25": dictionaries["value"]})
+
+                if dictionaries[keys] == "NO2":
+                    self.transformed_data.update(
+                        {"airquality_no2": dictionaries["value"]})
+
+        self.transformed_data.update({"record_time": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")})
 
     def send_message(self, message):
         """Method to send message via a Mosquitto message broker"""
+        self.message = json.dumps(message)
         self.connect(self.mqtt_host, self.mqtt_port)
-        self.publish(self.mqtt_topic, json.dumps(message))
-        ic()
-        ic(message)
-
+        self.publish(self.mqtt_topic, self.message)
 
 class Controller:
     """Class to control the program"""
@@ -139,79 +72,52 @@ class Controller:
         self.main_loop()
 
     def main_loop(self):
-        """Method to manage the program"""
-        nilu = HttpRequest(self.control_parameters.user_agent)
-        datastore = Data()
-        system = System()
+        """Method to handle program logic"""
+        nilu = Nilu(self.control_parameters.user_agent)
         broker_client = Mqtt(self.control_parameters.mqtt_host,
                              self.control_parameters.mqtt_port,
                              self.control_parameters.mqtt_topic,
                              self.control_parameters.mqtt_client_id)
-        error_timer = 0
-        error_counter = 0
-        now = ""
-        datastore.store_serial(system.get_serial_number())
 
         while True:
-            now = datetime.datetime.now().strftime(DATEFORMAT)
 
-            print(f'{now}: error_counter is at {error_counter}, max is 5\n\
-                     error_timer is at {round(error_timer/60)} minutes')
+            now = datetime.datetime.now().strftime(DATEFORMAT)
+            process_broken = False
 
             try:
-                data_raw = nilu.get_data(self.control_parameters.url)
-                datastore.transform_data(data_raw)
-                datastore.validate_data(datastore.transformed_data)
-                datastore.prepare_message()
-                ic()
+                print(f'{now}: Making API call')
+                nilu.get_data(self.control_parameters.url)
 
-            except Exception:
-                print(
-                    f'{now}: An error occured during retrieving and processing of data..')
-                error_timer = error_timer + 1800
-                error_counter = error_counter + 1
-                print(f'{now}: Adjusting error_counter to {error_counter}\n\
-                     Pausing for {round(error_timer/60)} minutes')
-                ic()
-                ic(error_counter)
-                ic(error_timer)
-                print(f'{now}: **** Info about the error ****')
+            except:
+                print(f'{now}: API call failed. Info about the error:')
                 traceback.print_exc()
-                time.sleep(error_timer)
+                process_broken = True
 
-            else:
+            if process_broken is False:
                 try:
-                    broker_client.send_message(datastore.prepared_message)
-                    print(f'{now}: Sent this message: {datastore.prepared_message}')
-                    print(f'{now}: Pausing program for 20 minutes...')
-                    ic()
-                    error_timer = 0
-                    error_counter = 0
-                    time.sleep(1200)
+                    broker_client.prepare_message(nilu.raw_response)
 
-                except Exception:
-                    print(
-                        f'{now}: An error occured during communication with MQTT..')
-                    error_timer = error_timer + 1800
-                    error_counter = error_counter + 1
-                    print(f'{now}: Adjusting error_counter to {error_counter}\n\
-                         Pausing for {round(error_timer/60)} minutes')
-                    ic()
-                    ic(error_counter)
-                    ic(error_timer)
-                    print(f'{now}: **** Info about the error ****')
+                except:
+                    print(f'{now}: An error occured preparing message for record:')
+                    pprint(nilu.raw_response, indent=4)
+                    print(f'{now}: Info about the error:')
                     traceback.print_exc()
-                    time.sleep(error_timer)
+                    process_broken = True
 
-            if error_counter > 5:
-                now = datetime.datetime.now().strftime(DATEFORMAT)
-                print(f'{now}: Max errors exceeded, halting program...')
-                ic()
-                time.sleep(14400)
-                now = datetime.datetime.now().strftime(DATEFORMAT)
-                print(f'{now}: Resetting error counter and restarting program...')
-                error_counter = 0
+            if process_broken is False:
+                try:
+                    broker_client.send_message(broker_client.transformed_data)
+                    print(f'{now}: Sent the following data as message:')
+                    pprint(broker_client.transformed_data, indent=4)
 
+                except:
+                    print(f'{now}: An error occured sending message with record:')
+                    pprint(broker_client.transformed_data, indent=4)
+                    print(f'{now}: Info about the error:')
+                    traceback.print_exc()
+
+            print(f'\n{now}: Next program run in 60 minutes...')
+            time.sleep(3600)
 
 def read_parameters():
     """
@@ -219,9 +125,7 @@ def read_parameters():
     for more on argparse, refer to https://zetcode.com/python/argparse/
     """
     parser = argparse.ArgumentParser(
-        description="Publish Nilu values over mqtt")
-    parser.add_argument("--debug", type=str,
-                        help="Flag to enable or disable icecream debug", required=True)
+        description="Configuration parameters")
     parser.add_argument("--user_agent", type=str,
                         help="email to identify with API owner", required=True)
     parser.add_argument("--url", type=str,
@@ -235,23 +139,13 @@ def read_parameters():
     parser.add_argument("--mqtt_client_id", type=str,
                         help="ClientID of the sending MQTT client", required=True)
     args = parser.parse_args()
-    ic()
-    ic(args)
-    return args
 
+    return args
 
 if __name__ == "__main__":
 
     DATEFORMAT = "%d.%m.%Y %H:%M:%S"
     print(f'{datetime.datetime.now().strftime(DATEFORMAT)}: Starting program...')
     PARAMETERS = read_parameters()
-
-    if PARAMETERS.debug == "yes":
-        print(f'{datetime.datetime.now().strftime(DATEFORMAT)}: Debug mode')
-        ic()
-    elif PARAMETERS.debug == "no":
-        ic()
-        ic.disable()
-        print(f'{datetime.datetime.now().strftime(DATEFORMAT)}: Debug deactivated')
 
     Controller(PARAMETERS)
