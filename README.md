@@ -4,6 +4,7 @@ The code in this repo is meant for experimenting and learning basic programming,
 The code in this repo does not produce a complete system. Its more like a toolbox, and hopefully parts and bits of the code samples here can be useful for others.
 
 More documentation on the different code snippets can be found in the sub catalogues. Currently there are code examples for:
+- [Sbanken](/sbanken/)
 - [Pimoroni Blinkt!](/blinkt/)
 - [Strava](/strava/)
 - [Fitbit](/fitbit/)
