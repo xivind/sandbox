@@ -1,6 +1,8 @@
 # About
 Bla bla, content and short description
 
+influx -database datastore -execute "SELECT * FROM climate WHERE "serial" = '100000003b5573e2''" -format csv > test2.csv
+
 NO LONGER IN USE
 Create the InfluxDB container with the command below. This is the container that runst the actualt InfluxDB server. To persist the data create a docker volume first. And also update the path to the default InfluxDB config file, `influxdb.conf`.
 ```

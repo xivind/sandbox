@@ -21,6 +21,15 @@ fitbit \
 --mqttClientID <mosquitto clientID>
 ```
 
+Use https://dev.fitbit.com/build/reference/web-api/troubleshooting-guide/oauth2-tutorial/ to get token, remember to use pkce
+
+Remember sequence in SQL-sscriptet, variables in payload must match order of columns in SQL
+
+Info about the SQL connector: https://pynative.com/python-mysql-insert-data-into-database-table/
+Exception handling: https://overiq.com/mysql-connector-python-101/exception-handling-in-connector-python/
+
+Docker bridge: https://stackoverflow.com/questions/52146056/how-to-delete-disable-docker0-bridge-on-docker-startup, maybe not in this doc? Also in archimate..
+
 Fitbit requires authentication with OAuth2. In the script we are using here, the tokens are handled through a json file, which must look as following. 
 
 `{"AccToken": "", "RefToken": "", "ClientId": "", "ClientSecret": ""}`
