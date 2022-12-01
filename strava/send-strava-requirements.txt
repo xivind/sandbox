@@ -1,4 +1,0 @@
-#For more info on pip requirements see https://note.nkmk.me/en/python-pip-install-requirements/
-
-requests-oauthlib
-paho-mqtt
