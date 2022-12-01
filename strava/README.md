@@ -37,21 +37,29 @@ Strava requires authentication with OAuth2. It looks complicated, but is fairly 
 `{"clientId": "", "clientSecret": "", "accessToken": "", "refreshToken": ""}`
 
 # About
-The Python code in this folder consists of to modules:
-- send_strava_manual.py
-- send_strava.py
-- update_strava.py
+The Python code in this folder consists of four modules:
+- send_strava.py and send_strava_manual.py: use Strava API's to retrieve rides for a specified athlete. Once the data is received, the modules modifies the data structure and publishes the data to a MQTT topic. The only difference between the two modules is that the manual module accepts a date range as input, while the other module only retrieves data from the last three days.  
+- update_strava.py: updates recent activities based on user defined criteria.
+- oauth2_helper.py: BLA BLA
 
-The two first modules, `send_strava_manual.py` and `send_strava.py` use Strava API's to retrieve rides for a specified athlete. Once the data is received, the modules modifies the data structure and publishes the data to a MQTT topic. The only difference between the two modules is that the manual module accepts a date range as input, while the other module only retrieves data from the last three days. The third module, `update_strava.py`, updates recent activities based on user defined criteria.
-
-**About the files in this folder**
-- `create-container-finance.sh`
+**About executables and parameter files in this folder**
+- `send_strava.py`
+The actual script that will be run in the container, what does it do
+- `send_strava_manual.py`
+Instructions to the Docker engine on how to build the image
+- `update_strava.py`
+Instructions to the Docker engine on how to build the image
+- `oauth_helper.py`
+Instructions to the Docker engine on how to build the image
+- `create-container-send-strava.sh`
 Send commands to the Docker engine to create image and container and to run the container
-- `send-finance.Dockerfile`
+- `create-container-update-strava.sh`
 Instructions to the Docker engine on how to build the image
 - `requirements.txt`
 Information about Python packages to be included in the image
-- `sbanken_oauth.json`
+- `strava_tokens.json`
+Customer specific information needed to access Sbanken's APIs
+- `strava_gear.json`
 Customer specific information needed to access Sbanken's APIs
 - `send_transactions.py`
 The actual script that will be run in the container
