@@ -2,7 +2,7 @@
 
 # First stage
 FROM python:3.9 AS builder
-COPY requirements.txt requirements.txt
+COPY send-strava-requirements.txt requirements.txt
 
 # Install dependencies to the local user directory
 RUN pip3 install --user -r requirements.txt
