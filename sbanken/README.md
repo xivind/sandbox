@@ -1,5 +1,5 @@
 # About
-The Python code in this folder uses Sbanken's archived transcations API to retrieve recently archived transactions for a specified account. Once the data is received, the code modifies the data structure and publishes the data to a MQTT topic.
+The Python code in this folder use Sbanken's archived transcations API to retrieve recently archived transactions for a specified account. Once the data is received, the code modifies the data structure and publishes the data to a MQTT topic.
 
 **There are a few things that must be in place for this code to work:**
 - You must have access to Sbanken's archived transactions API. Sbanken has a [developer portal](https://sbanken.no/bruke/utviklerportalen/) that provides all the necessary instructions to get started.
@@ -9,7 +9,7 @@ The Python code in this folder uses Sbanken's archived transcations API to retri
 
 >*I made this code to hone my Python skills and to experiment with Sbanken's API. As such there may be flaws and choices in the code that could represent issues with information security. Sbankens API accesses production data, i.e. actual data/money, so keep this in mind if you would like to use this code*
 
-**About the files in this folder**
+# Information about the files in this folder
 - `create-container-finance.sh`
 Send commands to the Docker engine to create image and container and to run the container
 - `send-finance.Dockerfile`
@@ -21,10 +21,10 @@ Customer specific information needed to access Sbanken's APIs
 - `send_transactions.py`
 The actual script that will be run in the container
 
-**Overview of the main components**
+# Overview of the main components
 ![Overview of main components](diagram.png)
 
-**Complete the following steps to get the code running**
+# Configuration instructions
 1. Copy the files in this folder to your environment. Best would be to clone it with Git, so you receive updates when the code is improved
 2. Login to Sbankes developer portal and retrieve client id, client secret, customer id and account id. Note that account id is not the same as account number. You may need to query Sbankens customer API to get the account id. Enter this information into the file `sbanken_oauth.json`. Make sure no one else has access to this file.
 3. Modify the shell script `create-container-finance.sh` according to suit your environment, e.g. with information about the MQTT broker.
