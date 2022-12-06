@@ -7,12 +7,12 @@ docker build -t strava -f send-strava.Dockerfile .
 docker run -d \
   --name=strava \
   -e TZ=Europe/Stockholm \
-  -v /home/pi/code/secrets:/secrets \
+  -v /home/user/secrets:/secrets \
   --restart unless-stopped \
   strava \
   ./send_strava.py \
   --oauth_file /secrets/strava_tokens.json \
-  --mqtt_host messagebroker \
+  --mqtt_host mqtt_broker \
   --mqtt_port 1883 \
   --mqtt_topic strava \
   --mqtt_client_id send_strava

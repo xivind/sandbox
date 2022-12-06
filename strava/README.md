@@ -28,31 +28,30 @@ Instructions to the docker daemon for building image for the `send_strava.py` mo
 Instructions to the docker daemon for building image for the `update_strava.py` module
 
 # Configuration instructions
-You must have access to Strava's activities API for these modules to work. Strava has a [developer portal](https://developers.strava.com/) that provides all the necessary instructions to get started. Please note that except `oauth_helper.py` and `send_strava_manual.py`, which are written to be run ad-hoc, its best to run the modules either through [systemd](https://en.wikipedia.org/wiki/Systemd) or Docker. This will ensure that the scripts runs continously and you will also get some built-in error handling, e.g. automatic restart if something unexpected happens. The code in this folder assumes Docker engine is running. . 
+Except `oauth_helper.py` and `send_strava_manual.py`, which are written to be run ad-hoc, its best to run the modules either through [systemd](https://en.wikipedia.org/wiki/Systemd) or Docker. This will ensure that the scripts runs continously and you will also get some built-in error handling, e.g. automatic restart if something unexpected happens. The code in this folder assumes Docker engine is running.
 
 >*I made this code to hone my Python skills and to experiment with Strava's API. As such there may be flaws and choices in the code that could represent issues with information security. Strava API accesses real data, i.e. actual activity data, so keep this in mind if you would like to use this code*
 
 ## Prerequisites for all modules
-1. Copy the files in this folder to your environment. Best would be to clone it with Git, so you receive updates when the code is improved
-2. Obviously you will need to be a registered user with Strava for this code to work. But you also need to obtain som extra credentials from Strava to get the oauth2 process going. This basically means that you need to [complete a form](https://strava.com/settings/api) available at Strava's developer portal and then use the info from that step to retrieve oauth tokens. Tekk Sparrow Program has made an excellent [Youtube-tutorial](https://www.youtube.com/watch?v=MrODoLLkM5E) on how to do this and even [provided a script]()https://github.com/tekksparrow-programs/simple-api-strava/blob/main/simple-api-strava.py. You can also use the `oauth2_helper.py` script in this folder, which is directly based on the one written by Tekk Sparrow Programs.
+1. Copy the files in this folder to your environment. Best would be to clone the entire repository with Git, so you receive updates when the code is improved
+2. You must have access to Strava's activities API for these modules to work. Strava has a [developer portal](https://developers.strava.com/) that provides all the necessary instructions to get started. In particular, you need to obtain credentials from Strava to get the oauth2 process going. This basically means that you need to [complete a form](https://strava.com/settings/api) available at Strava's developer portal and then use the info from that step to retrieve oauth tokens. Tekk Sparrow Program has made an excellent [Youtube-tutorial](https://www.youtube.com/watch?v=MrODoLLkM5E) on how to do this and even [provided a script](https://github.com/tekksparrow-programs/simple-api-strava/blob/main/simple-api-strava.py). You can also use the `oauth2_helper.py` script in this folder, which is directly based on the one written by Tekk Sparrow Programs. Strava also has a nice [step-by-step guide](https://developers.strava.com/docs/getting-started/#oauth) that explains the process.
 3. Modify `strava_tokens.json` with the info returned from the script you ran in the previous step. This is a one time process. Once this is done, the modules in this folder will use refresh tokens to automatically update your access token when it expires.
 
-Strava requires authentication with OAuth2. It looks complicated, but is fairly straight forward to configure if you follow [Stravas step-by-step guide](https://developers.strava.com/docs/getting-started/#oauth). In the script we are using here, the tokens are handled through a json file, which must look as following.
-
-
 ## Configuration of send_strava.py and send_strava_manual.py
+1. Modify the shell script `create-container-send-strava.sh` according to suit your environment, e.g. with information about the MQTT broker, location of the oauth tokens etc
+4. Run the shell script `create-container-send-strava.sh`. This will create a image and then a container based on that image and run the container 
 
-`send_strava.py` publishes message to a [MQTT](https://mqtt.org/) topic. MQTT is freely available and can for example be run as a [Docker container](https://hub.docker.com/_/eclipse-mosquitto)
+The `send_strava_manual.py` script requires the same parameters as the container version of the script, but as the script only runs ad-hoc its easier to just input the parameters whenever you need to run the script, typically to retrieve a batch of Strava activities.
 
-3. Modify the shell script `create-container-finance.sh` according to suit your environment, e.g. with information about the MQTT broker.
-4. Run the shell script `create-container-finance.sh`.
-
-Create the container that retrieves data from Strava with the command below. This container only retrieves data from Strava and sends it to the mqtt broker. It does not need to persist data. The commands must be run from the directory that contains `Dockerfile` and `requirements.txt`. The script here is quite rudimentary in regards to the handling of data. Benji Knights Johnson has a better approach, using Pandas, that is described [in an article on medium](https://medium.com/swlh/using-python-to-connect-to-stravas-api-and-analyse-your-activities-dummies-guide-5f49727aac86).
-
-
+**Overview of the main components**
 ![Overview of main components](diagram.png)
 
-The script only sends data to the MQTT topic. Only creativity limits what is possible to do with that data. For me, I am interested in figuring out why my money somehow seem to disappear in thin air. As such I have created another piece of code that subscribes to the topic, writes the data to MariaDB and visualises it in Grafana. Information about that code will follow later.
+Both scripts sends data to a MQTT topic and as such do not need to persist data themselves. MQTT is freely available and can for example be run as a [Docker container](https://hub.docker.com/_/eclipse-mosquitto)
+Only creativity limits what is possible to do with those data, once they are published to the topic. For instance you could light up a led when a certain weekly distance is reached, or you could have another piece of code that subscribes to the topic, writes the data to MariaDB and visualises it in Grafana. Information about that code will follow later. But for now, here is an example of how that could look
 ![Visualisation of archived transactions](visualization.png)
 
 ## Configuration of update_strava.py
+1. Bla
+2. Bla
+
+![Example console output](console_output.png)

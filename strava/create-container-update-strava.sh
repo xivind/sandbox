@@ -7,7 +7,7 @@ docker build -t update-strava -f update-strava.Dockerfile .
 docker run -d \
   --name=update-strava \
   -e TZ=Europe/Stockholm \
-  -v /home/pi/code/secrets:/secrets \
+  -v /home/user/secrets:/secrets \
   --restart unless-stopped \
   update-strava \
   ./update_strava.py \
