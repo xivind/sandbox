@@ -126,10 +126,10 @@ class Strava:
 
                     #Section to be specified by user. Add elif blocks as needed
                     if activities["sport_type"] == "Ride" and "Ride" in activities["name"] and round(float(activities["distance"]/1000),2) < 20:
-                        variables = {"name": "Bysykling",
-                                "commute": True,
-                                "gear_id": "b3450507",
-                                "description": "Auto-updated"
+                        variables = {"name": "Updated title", #User defined title
+                                "commute": True, #Commute True or False
+                                "gear_id": "00000", #Gear id, find it on Strava
+                                "description": "Updated description" #User defined description
                         }
                         print("Information to be updated in activity:")
                         pprint(variables, indent=4)

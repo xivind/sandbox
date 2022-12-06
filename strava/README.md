@@ -46,12 +46,14 @@ The `send_strava_manual.py` script requires the same parameters as the container
 **Overview of the main components**
 ![Overview of main components](diagram.png)
 
-Both scripts sends data to a MQTT topic and as such do not need to persist data themselves. MQTT is freely available and can for example be run as a [Docker container](https://hub.docker.com/_/eclipse-mosquitto)
+Both scripts send data to a MQTT topic and as such do not need to persist data themselves. MQTT is freely available and can for example be run as a [Docker container](https://hub.docker.com/_/eclipse-mosquitto)
 Only creativity limits what is possible to do with those data, once they are published to the topic. For instance you could light up a led when a certain weekly distance is reached, or you could have another piece of code that subscribes to the topic, writes the data to MariaDB and visualises it in Grafana. Information about that code will follow later. But for now, here is an example of how that could look
 ![Visualisation of archived transactions](visualization.png)
 
 ## Configuration of update_strava.py
-1. Bla
-2. Bla
+1. Find the section for user variables in `update_strava.py`, around line 127, and adjust as needed, e.g. with activity title, description and gear id
+2. Update `strava_gear.json` with gear id and name of gear. The gear id can be found either through the Strava website, check the URL, or by inspecting the json response from the activities API
+3. Run the shell script `create-container-update-strava.sh`. This will create a image and then a container based on that image and run the container
 
+**Sample output produced when the script runs**
 ![Example console output](console_output.png)
