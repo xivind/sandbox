@@ -2,19 +2,15 @@
 
 set -o xtrace
 
-# Build the image and tag it
-docker build -t strava -f send-strava.Dockerfile .
-
 # Create the container
 docker run -d \
-  --name=strava \
+  --name=neo4j \
   -e TZ=Europe/Stockholm \
-  -v /home/pi/code/secrets:/secrets \
+  --volume /home/pi/neo4j:/data \
   --restart unless-stopped \
-  strava \
-  ./send_strava.py \
-  --oauth_file /secrets/strava_tokens.json \
-  --mqtt_host messagebroker \
-  --mqtt_port 1883 \
-  --mqtt_topic strava \
-  --mqtt_client_id send_strava
+  --publish=7474:7474 --publish=7687:7687 \
+  -e NEO4J_server_default__listen__address=0.0.0.0 \
+neo4j
+
+
+# Refer to https://neo4j.com/docs/operations-manual/current/docker/ref-settings/
