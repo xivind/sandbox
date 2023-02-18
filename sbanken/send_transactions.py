@@ -44,10 +44,16 @@ class Sbanken:
 
     def get_transactions(self):
         """Method to make http request. Default is the last 30 days. See Sbanken docs"""
+        endDate = datetime.datetime.today()
+        startDate = endDate - datetime.timedelta(days=10)
+
+        print(f"Fetching transactions between {startDate.strftime('%Y-%m-%d')} and {endDate.strftime('%Y-%m-%d')}")
+        
         response_object = self.session.get(
-            f"https://publicapi.sbanken.no/apibeta/api/v2/Transactions/archive/{self.account_id}?length=300",
+            f"https://publicapi.sbanken.no/apibeta/api/v2/Transactions/archive/{self.account_id}?startDate={startDate.strftime('%Y-%m-%d')}&endDate={endDate.strftime('%Y-%m-%d')}&length=300",
             headers={'customerId': self.customer_id}
             )
+    
         self.raw_response = response_object.json()
 
 class Mqtt(paho.mqtt.client.Client):
@@ -77,8 +83,10 @@ class Mqtt(paho.mqtt.client.Client):
         """Method to prepare legacy visa message to be sent via a Mosquitto message broker"""
         self.transformed_data.clear()
 
+        interestDate =  datetime.datetime.strptime(data_to_transform["interestDate"], "%Y-%m-%dT%H:%M:%S") - datetime.timedelta(days=1)
+
         self.transformed_data.update({"unique_id": str(data_to_transform["transactionId"])})
-        self.transformed_data.update({"record_time": str(data_to_transform["interestDate"])})
+        self.transformed_data.update({"record_time": datetime.datetime.strftime(interestDate, "%Y-%m-%dT%H:%M:%S")})
         self.transformed_data.update({"merchant_name": str(data_to_transform["text"])})
         self.transformed_data.update({"merchant_category": "Legacy visa"})
         self.transformed_data.update({"amount": int(data_to_transform["amount"]*-1)})
@@ -108,7 +116,7 @@ class Controller:
         while True:
 
             now = datetime.datetime.now().strftime(DATEFORMAT)
-            cutoff_date = datetime.datetime.today() - datetime.timedelta(days=14)
+            cutoff_date = datetime.datetime.today() - datetime.timedelta(days=7)
             total_transactions = 0
             archived_visa_transactions = 0
             archived_visa_legacy_transactions = 0
