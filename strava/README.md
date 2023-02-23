@@ -1,5 +1,5 @@
 # About
-The Python code in this folder use Strava's activities API. The main purpose is to retrieve personal activity and store it locally in order to do analysis and visualistion beyond what is offered by Strava. Second, the code also makes it possibly to automatically update activities meeting certain criteria. This can be useful if you for instance want consistent naming of commuting activities.
+The Python code in this folder use Strava's activities API. The main purpose is to retrieve personal activity and store it locally in order to do analysis and visualistion beyond what is offered by Strava. Second, the code also makes it possible to automatically update activities meeting certain criteria. This can be useful if you for instance want consistent naming of commuting activities.
 
 # Info about executables and parameter files in this folder
 - `send_strava.py`
