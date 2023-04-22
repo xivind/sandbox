@@ -6,6 +6,7 @@ import argparse
 import datetime
 import traceback
 import time
+import urllib.parse
 from pprint import pprint
 import paho.mqtt.client
 from oauthlib.oauth2 import BackendApplicationClient
@@ -27,10 +28,10 @@ class Sbanken:
     def read_oauth_options(self):
         """Method to read oauth options from file"""
         secrets = json.load(open(self.oauth_file, 'r'))
-        self.client_id = secrets['client_id']
-        self.client_secret = secrets['client_secret']
-        self.customer_id = secrets['customer_id']
-        self.account_id = secrets['account_id']
+        self.client_id = urllib.parse.quote(secrets['client_id'])
+        self.client_secret = urllib.parse.quote(secrets['client_secret'])
+        self.customer_id = urllib.parse.quote(secrets['customer_id'])
+        self.account_id = urllib.parse.quote(secrets['account_id'])
 
     def create_authenticated_http_session(self):
         """Method to handle the oauth2 protocol"""
