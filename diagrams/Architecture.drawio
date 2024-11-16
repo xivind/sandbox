@@ -10,10 +10,10 @@
         <mxCell id="sIb8TJTJuCUGwvz0RZf--1" value="Vector db creator" style="shape=module;align=left;spacingLeft=20;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
           <mxGeometry x="330" y="420" width="120" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="sIb8TJTJuCUGwvz0RZf--2" value="Context creator" style="shape=module;align=left;spacingLeft=20;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;gradientColor=none;" vertex="1" parent="1">
+        <mxCell id="sIb8TJTJuCUGwvz0RZf--2" value="Context creator" style="shape=module;align=left;spacingLeft=20;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
           <mxGeometry x="240" y="280" width="120" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="sIb8TJTJuCUGwvz0RZf--3" value="Feedback loop" style="shape=module;align=left;spacingLeft=20;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;gradientColor=none;" vertex="1" parent="1">
+        <mxCell id="sIb8TJTJuCUGwvz0RZf--3" value="Feedback loop" style="shape=module;align=left;spacingLeft=20;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
           <mxGeometry x="420" y="280" width="120" height="70" as="geometry" />
         </mxCell>
         <mxCell id="sIb8TJTJuCUGwvz0RZf--4" value="" style="endArrow=none;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="sIb8TJTJuCUGwvz0RZf--1" target="sIb8TJTJuCUGwvz0RZf--2">
