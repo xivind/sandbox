@@ -1,92 +1,116 @@
 {% extends "base.html" %}
 
-{% block title %}AI Expert Chat{% endblock %}
+{% block title %}KI-demonstrator reguleringsplan for e-helse{% endblock %}
 
 {% block extra_css %}
 <style>
+    /* Chat container and basic message styling */
     .chat-container {
         height: calc(100vh - 200px);
         overflow-y: auto;
     }
+
     .message {
         margin: 10px;
         padding: 10px;
         border-radius: 10px;
     }
+
     .user-message {
         background-color: #afc0d1;
         margin-left: 20%;
     }
+
     .assistant-message {
         background-color: #6896c0;
         margin-right: 20%;
+        color: #fff;
+        white-space: pre-line;  /* This helps preserve line breaks */
     }
-    
+
+    /* Typing indicator */
     .typing-indicator {
         margin: 10px;
     }
 
     .typing-dots {
-    display: inline-flex;
-    align-items: center;
-    height: 30px;
+        display: inline-flex;
+        align-items: center;
+        height: 30px;
     }
 
     .typing-dots span {
         width: 8px;
         height: 8px;
         margin: 0 4px;
-        background: #6c757d;
         border-radius: 50%;
         animation: typing 1.4s infinite;
     }
 
-    .typing-dots span:nth-child(1) {
-        background: #4285f4;  /* Google Blue */
-    }
-
+    .typing-dots span:nth-child(1) { background: #4285f4; }
     .typing-dots span:nth-child(2) {
-        background: #ea4335;  /* Google Red */
+        background: #ea4335;
         animation-delay: 0.2s;
     }
-
     .typing-dots span:nth-child(3) {
-        background: #34a853;  /* Google Green */
+        background: #34a853;
         animation-delay: 0.4s;
     }
 
     @keyframes typing {
-        0%, 60%, 100% {
-            transform: translateY(0);
-        }
-        30% {
-            transform: translateY(-6px);
-        }
+        0%, 60%, 100% { transform: translateY(0); }
+        30% { transform: translateY(-6px); }
     }
 
     /* Markdown styling */
-    .assistant-message {
-        background-color: #6896c0;
-        margin-right: 20%;
+    .assistant-message h1 {
+        font-size: 1.8em;
+        margin: 1em 0 0.5em 0;
         color: #fff;
+        font-weight: bold;
     }
 
-    .assistant-message a {
-        color: #e9ecef;
-        text-decoration: underline;
+    .assistant-message h2 {
+        font-size: 1.5em;
+        margin: 1em 0 0.5em 0;
+        color: #fff;
+        font-weight: bold;
+    }
+
+    .assistant-message h3 {
+        font-size: 1.3em;
+        margin: 1em 0 0.5em 0;
+        color: #fff;
+        font-weight: bold;
+    }
+
+    .assistant-message p {
+        margin: 0.8em 0;
+        line-height: 1.4;
+    }
+
+    .assistant-message ul,
+    .assistant-message ol {
+        margin: 0.8em 0;
+        padding-left: 2em;
+    }
+
+    .assistant-message li {
+        margin: 0.5em 0;
     }
 
     .assistant-message code {
         background-color: rgba(255, 255, 255, 0.1);
-        padding: 2px 4px;
-        border-radius: 4px;
+        padding: 0.2em 0.4em;
+        border-radius: 3px;
         font-family: monospace;
+        font-size: 0.9em;
     }
 
     .assistant-message pre {
-        background-color: rgba(0, 0, 0, 0.1);
+        background-color: rgba(0, 0, 0, 0.2);
         padding: 1em;
-        border-radius: 8px;
+        border-radius: 5px;
         overflow-x: auto;
         margin: 1em 0;
     }
@@ -97,16 +121,21 @@
         color: #e9ecef;
     }
 
-    .assistant-message ul, .assistant-message ol {
-        margin: 0.5em 0;
-        padding-left: 2em;
-    }
-
     .assistant-message blockquote {
         border-left: 3px solid rgba(255, 255, 255, 0.3);
-        margin: 0.5em 0;
+        margin: 1em 0;
         padding-left: 1em;
         color: rgba(255, 255, 255, 0.9);
+    }
+
+    .assistant-message a {
+        color: #e9ecef;
+        text-decoration: underline;
+    }
+
+    .assistant-message a:hover {
+        text-decoration: none;
+        color: #fff;
     }
 
     .assistant-message table {
@@ -115,7 +144,8 @@
         width: 100%;
     }
 
-    .assistant-message th, .assistant-message td {
+    .assistant-message th,
+    .assistant-message td {
         border: 1px solid rgba(255, 255, 255, 0.2);
         padding: 0.5em;
     }
@@ -128,7 +158,7 @@
 
 {% block content %}
 <div class="container mt-4">
-    <h1 class="text-center mb-4">AI Expert Chat</h1>
+    <h1 class="text-center mb-4">KI-demonstrator reguleringsplan for e-helse</h1>
     
     <div class="chat-container border rounded p-3 mb-3 shadow" id="chatContainer">
         <!-- Messages will be inserted here -->
@@ -136,7 +166,7 @@
 
     <div id="typingIndicator" class="typing-indicator" style="display: none;">
         <div class="px-3 py-2 rounded shadow-sm d-inline-flex align-items-center">
-            <small class="text-muted me-2">AI is typing</small>
+            <small class="text-muted me-2">Reguleringsplanen skriver</small>
             <div class="typing-dots">
                 <span></span>
                 <span></span>
@@ -156,103 +186,104 @@
 
 {% block extra_js %}
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const chatContainer = document.getElementById('chatContainer');
-        const chatForm = document.getElementById('chatForm');
-        const userInput = document.getElementById('userInput');
-        const typingIndicator = document.getElementById('typingIndicator');
+ document.addEventListener('DOMContentLoaded', function() {
+    // Configure marked options
+    marked.setOptions({
+        gfm: true,              // GitHub Flavored Markdown
+        breaks: true,           // Add <br> on single line breaks
+        headerIds: true,        // Add ids to headers
+        mangle: false,          // Don't escape HTML
+        pedantic: false,        // Don't be too strict with markdown spec
+        sanitize: false,        // Allow HTML in markdown
+    });
     
-        // Configure marked options
-        marked.setOptions({
-            highlight: function(code, language) {
-                if (language && hljs.getLanguage(language)) {
-                    return hljs.highlight(code, { language: language }).value;
-                }
-                return hljs.highlightAuto(code).value;
-            },
-            breaks: true,
-            gfm: true
-        });
-    
-        chatForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const query = userInput.value.trim();
-            if (!query) return;
-    
-            // Add user message
-            appendMessage(query, 'user');
-            userInput.value = '';
-    
-            // Show typing indicator
-            typingIndicator.style.display = 'block';
-    
-            try {
-                const response = await fetch('/chat', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ query: query })
-                });
-    
-                const reader = response.body.getReader();
-                const decoder = new TextDecoder();
-                let assistantResponse = '';
-    
-                while (true) {
-                    const { done, value } = await reader.read();
-                    if (done) break;
-    
-                    const text = decoder.decode(value);
-                    const lines = text.split('\n');
-    
-                    for (const line of lines) {
-                        if (line.startsWith('data: ')) {
-                            const token = line.slice(6);
-                            assistantResponse += token;
-                            updateLastAssistantMessage(assistantResponse);
-                        }
+    const chatContainer = document.getElementById('chatContainer');
+    const chatForm = document.getElementById('chatForm');
+    const userInput = document.getElementById('userInput');
+    const typingIndicator = document.getElementById('typingIndicator');
+
+    marked.setOptions({
+        breaks: true,
+        gfm: true
+    });
+
+    chatForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const query = userInput.value.trim();
+        if (!query) return;
+
+        appendMessage(query, 'user');
+        userInput.value = '';
+        typingIndicator.style.display = 'block';
+
+        try {
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query: query })
+            });
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let assistantResponse = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const text = decoder.decode(value);
+                const lines = text.split('\n');
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const token = line.slice(6);
+                        assistantResponse += token;
+                        updateLastAssistantMessage(assistantResponse);
                     }
                 }
-            } catch (error) {
-                console.error('Error:', error);
-                appendMessage('Sorry, there was an error processing your request.', 'assistant');
-            } finally {
-                typingIndicator.style.display = 'none';
             }
-        });
-    
-        function appendMessage(text, sender) {
-            const messageDiv = document.createElement('div');
-            messageDiv.className = `message ${sender}-message`;
-            if (sender === 'assistant') {
-                messageDiv.innerHTML = marked.parse(text);
-                // After rendering markdown, apply syntax highlighting to code blocks
-                messageDiv.querySelectorAll('pre code').forEach((block) => {
-                    hljs.highlightBlock(block);
-                });
-            } else {
-                messageDiv.textContent = text;
-            }
-            chatContainer.appendChild(messageDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-    
-        function updateLastAssistantMessage(text) {
-            let lastMessage = chatContainer.querySelector('.assistant-message:last-child');
-            if (!lastMessage) {
-                lastMessage = document.createElement('div');
-                lastMessage.className = 'message assistant-message';
-                chatContainer.appendChild(lastMessage);
-            }
-            lastMessage.innerHTML = marked.parse(text);
-            // Apply syntax highlighting to code blocks
-            lastMessage.querySelectorAll('pre code').forEach((block) => {
-                hljs.highlightBlock(block);
-            });
-            chatContainer.scrollTop = chatContainer.scrollHeight;
+        } catch (error) {
+            console.error('Error:', error);
+            appendMessage('Sorry, there was an error processing your request.', 'assistant');
+        } finally {
+            typingIndicator.style.display = 'none';
         }
     });
+
+    function appendMessage(text, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}-message`;
+        
+        if (sender === 'assistant') {
+            messageDiv.innerHTML = marked.parse(text);
+            // Apply syntax highlighting to code blocks if any
+            messageDiv.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightBlock(block);
+            });
+        } else {
+            messageDiv.textContent = text;
+        }
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function updateLastAssistantMessage(text) {
+        let lastMessage = chatContainer.querySelector('.assistant-message:last-child');
+        if (!lastMessage) {
+            lastMessage = document.createElement('div');
+            lastMessage.className = 'message assistant-message';
+            chatContainer.appendChild(lastMessage);
+        }
+        lastMessage.innerHTML = marked.parse(text);
+        // Apply syntax highlighting to code blocks if any
+        lastMessage.querySelectorAll('pre code').forEach((block) => {
+            hljs.highlightBlock(block);
+        });
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+});
 </script>
 {% endblock %}
