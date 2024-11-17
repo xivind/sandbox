@@ -7,7 +7,7 @@ class Settings(BaseSettings):
     openai_api_key: str
     chroma_db_path: str = "./chroma_db"
     collection_name: str = "reguleringsplan"  # Update this to match your collection
-    model_name: str = "gpt-4o"
+    model_name: str = "gpt-4o-mini-2024-07-18"
     chunk_size: int = 512
     chunk_overlap: int = 50
     max_tokens: int = 2000
