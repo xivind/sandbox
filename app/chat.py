@@ -21,15 +21,14 @@ async def get_relevant_context(query: str) -> str:
     # Get embeddings for the query
     response = await client.embeddings.create(
         model="text-embedding-ada-002",
-        input=query
-    )
+        input=query)
+    
     query_embedding = response.data[0].embedding
 
     # Query ChromaDB
     results = collection.query(
         query_embeddings=[query_embedding],
-        n_results=settings.top_k
-    )
+        n_results=settings.top_k)
 
     # Combine relevant chunks
     contexts = results['documents'][0]
@@ -57,8 +56,7 @@ async def generate_response(query: str, context: str) -> AsyncGenerator[str, Non
         messages=[{"role": "user", "content": prompt}],
         temperature=settings.temperature,
         max_tokens=settings.max_tokens,
-        stream=True
-    )
+        stream=True)
 
     async for chunk in response:
         if chunk.choices[0].delta.content is not None:
