@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}AI Expert Chat{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-container {
+        height: calc(100vh - 200px);
+        overflow-y: auto;
+    }
+    .message {
+        margin: 10px;
+        padding: 10px;
+        border-radius: 10px;
+    }
+    .user-message {
+        background-color: #e9ecef;
+        margin-left: 20%;
+    }
+    .assistant-message {
+        background-color: #f8f9fa;
+        margin-right: 20%;
+    }
+    .typing-indicator {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center mb-4">AI Expert Chat</h1>
+    
+    <div class="chat-container border rounded p-3 mb-3" id="chatContainer">
+        <!-- Messages will be inserted here -->
+    </div>
+
+    <div class="typing-indicator" id="typingIndicator">
+        <div class="spinner-border spinner-border-sm" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        AI is typing...
+    </div>
+    
+    <form id="chatForm" class="mt-3">
+        <div class="input-group">
+            <input type="text" id="userInput" class="form-control" placeholder="Type your question..." required>
+            <button type="submit" class="btn btn-primary">Send</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatContainer = document.getElementById('chatContainer');
+    const chatForm = document.getElementById('chatForm');
+    const userInput = document.getElementById('userInput');
+    const typingIndicator = document.getElementById('typingIndicator');
+
+    chatForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const query = userInput.value.trim();
+        if (!query) return;
+
+        // Add user message
+        appendMessage(query, 'user');
+        userInput.value = '';
+
+        // Show typing indicator
+        typingIndicator.style.display = 'block';
+
+        try {
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ query: query })
+            });
+
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let assistantResponse = '';
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const text = decoder.decode(value);
+                const lines = text.split('\n');
+
+                for (const line of lines) {
+                    if (line.startsWith('data: ')) {
+                        const token = line.slice(6);
+                        assistantResponse += token;
+                        updateLastAssistantMessage(assistantResponse);
+                    }
+                }
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            appendMessage('Sorry, there was an error processing your request.', 'assistant');
+        } finally {
+            typingIndicator.style.display = 'none';
+        }
+    });
+
+    function appendMessage(text, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}-message`;
+        messageDiv.textContent = text;
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function updateLastAssistantMessage(text) {
+        let lastMessage = chatContainer.querySelector('.assistant-message:last-child');
+        if (!lastMessage) {
+            lastMessage = document.createElement('div');
+            lastMessage.className = 'message assistant-message';
+            chatContainer.appendChild(lastMessage);
+        }
+        lastMessage.textContent = text;
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+});
+</script>
+{% endblock %}

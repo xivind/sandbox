@@ -1,0 +1,13 @@
+openai
+numpy
+pandas
+tiktoken
+chromadb
+tqdm
+python-dotenv
+jinja2
+python-multipart
+fastapi
+uvicorn
+pydantic
+pydantic-settings
