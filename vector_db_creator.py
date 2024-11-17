@@ -24,7 +24,7 @@ class EmbeddingPipeline:
     def __init__(
         self,
         openai_api_key: str,
-        model: str = "text-embedding-ada-002",
+        model: str = "text-embedding-3-large",
         chunk_size: int = 512,
         chunk_overlap: int = 50,
         batch_size: int = 100,
@@ -243,7 +243,7 @@ if __name__ == "__main__":
     
     # Process CSV data
     csv_results = pipeline.process_csv(
-        csv_path="raw_data/regulation-reports.csv",
+        csv_path="raw_data/reguleringsplan_cleaned.csv",
         text_columns=['informasjonstype',
                       'navn',
                       'ingress',
@@ -269,4 +269,4 @@ if __name__ == "__main__":
     all_results = csv_results + text_results
     
     # Save to ChromaDB
-    pipeline.save_to_chromadb(all_results, "reguleringsplan")
+    pipeline.save_to_chromadb(all_results, "reguleringsplan_cleaned")

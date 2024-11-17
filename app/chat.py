@@ -5,14 +5,15 @@ import chromadb
 from openai import AsyncOpenAI
 import tiktoken
 from .config import get_settings
+from icecream import ic
 
 
-settings = get_settings()
+settings = get_settings() #This causes a caching problem
 client = AsyncOpenAI(api_key=settings.openai_api_key)
 
 # Initialize ChromaDB
 chroma_client = chromadb.PersistentClient(path=settings.chroma_db_path)
-collection = chroma_client.get_collection(settings.collection_name)
+collection = chroma_client.get_collection("reguleringsplan_cleaned")
 
 async def get_relevant_context(query: str) -> str:
     """
@@ -20,7 +21,7 @@ async def get_relevant_context(query: str) -> str:
     """
     # Get embeddings for the query
     response = await client.embeddings.create(
-        model="text-embedding-ada-002",
+        model="text-embedding-3-large",
         input=query)
     
     query_embedding = response.data[0].embedding
@@ -32,6 +33,10 @@ async def get_relevant_context(query: str) -> str:
 
     # Combine relevant chunks
     contexts = results['documents'][0]
+    print(len(contexts))
+    for item in contexts:
+        print("New item")
+        print(f"{item} \n")
     return "\n\n---\n\n".join(contexts)
 
 async def generate_response(query: str, context: str) -> AsyncGenerator[str, None]:

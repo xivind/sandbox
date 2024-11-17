@@ -63,6 +63,66 @@
             transform: translateY(-6px);
         }
     }
+
+    /* Markdown styling */
+    .assistant-message {
+        background-color: #6896c0;
+        margin-right: 20%;
+        color: #fff;
+    }
+
+    .assistant-message a {
+        color: #e9ecef;
+        text-decoration: underline;
+    }
+
+    .assistant-message code {
+        background-color: rgba(255, 255, 255, 0.1);
+        padding: 2px 4px;
+        border-radius: 4px;
+        font-family: monospace;
+    }
+
+    .assistant-message pre {
+        background-color: rgba(0, 0, 0, 0.1);
+        padding: 1em;
+        border-radius: 8px;
+        overflow-x: auto;
+        margin: 1em 0;
+    }
+
+    .assistant-message pre code {
+        background-color: transparent;
+        padding: 0;
+        color: #e9ecef;
+    }
+
+    .assistant-message ul, .assistant-message ol {
+        margin: 0.5em 0;
+        padding-left: 2em;
+    }
+
+    .assistant-message blockquote {
+        border-left: 3px solid rgba(255, 255, 255, 0.3);
+        margin: 0.5em 0;
+        padding-left: 1em;
+        color: rgba(255, 255, 255, 0.9);
+    }
+
+    .assistant-message table {
+        border-collapse: collapse;
+        margin: 1em 0;
+        width: 100%;
+    }
+
+    .assistant-message th, .assistant-message td {
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 0.5em;
+    }
+
+    .assistant-message th {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
 </style>
 {% endblock %}
 
@@ -96,79 +156,103 @@
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const chatContainer = document.getElementById('chatContainer');
-    const chatForm = document.getElementById('chatForm');
-    const userInput = document.getElementById('userInput');
-    const typingIndicator = document.getElementById('typingIndicator');
-
-    chatForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        const query = userInput.value.trim();
-        if (!query) return;
-
-        // Add user message
-        appendMessage(query, 'user');
-        userInput.value = '';
-
-        // Show typing indicator
-        typingIndicator.style.display = 'block';
-
-        try {
-            const response = await fetch('/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ query: query })
-            });
-
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let assistantResponse = '';
-
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-
-                const text = decoder.decode(value);
-                const lines = text.split('\n');
-
-                for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        const token = line.slice(6);
-                        assistantResponse += token;
-                        updateLastAssistantMessage(assistantResponse);
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatContainer = document.getElementById('chatContainer');
+        const chatForm = document.getElementById('chatForm');
+        const userInput = document.getElementById('userInput');
+        const typingIndicator = document.getElementById('typingIndicator');
+    
+        // Configure marked options
+        marked.setOptions({
+            highlight: function(code, language) {
+                if (language && hljs.getLanguage(language)) {
+                    return hljs.highlight(code, { language: language }).value;
+                }
+                return hljs.highlightAuto(code).value;
+            },
+            breaks: true,
+            gfm: true
+        });
+    
+        chatForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const query = userInput.value.trim();
+            if (!query) return;
+    
+            // Add user message
+            appendMessage(query, 'user');
+            userInput.value = '';
+    
+            // Show typing indicator
+            typingIndicator.style.display = 'block';
+    
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query: query })
+                });
+    
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let assistantResponse = '';
+    
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+    
+                    const text = decoder.decode(value);
+                    const lines = text.split('\n');
+    
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const token = line.slice(6);
+                            assistantResponse += token;
+                            updateLastAssistantMessage(assistantResponse);
+                        }
                     }
                 }
+            } catch (error) {
+                console.error('Error:', error);
+                appendMessage('Sorry, there was an error processing your request.', 'assistant');
+            } finally {
+                typingIndicator.style.display = 'none';
             }
-        } catch (error) {
-            console.error('Error:', error);
-            appendMessage('Sorry, there was an error processing your request.', 'assistant');
-        } finally {
-            typingIndicator.style.display = 'none';
+        });
+    
+        function appendMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            if (sender === 'assistant') {
+                messageDiv.innerHTML = marked.parse(text);
+                // After rendering markdown, apply syntax highlighting to code blocks
+                messageDiv.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightBlock(block);
+                });
+            } else {
+                messageDiv.textContent = text;
+            }
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    
+        function updateLastAssistantMessage(text) {
+            let lastMessage = chatContainer.querySelector('.assistant-message:last-child');
+            if (!lastMessage) {
+                lastMessage = document.createElement('div');
+                lastMessage.className = 'message assistant-message';
+                chatContainer.appendChild(lastMessage);
+            }
+            lastMessage.innerHTML = marked.parse(text);
+            // Apply syntax highlighting to code blocks
+            lastMessage.querySelectorAll('pre code').forEach((block) => {
+                hljs.highlightBlock(block);
+            });
+            chatContainer.scrollTop = chatContainer.scrollHeight;
         }
     });
-
-    function appendMessage(text, sender) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${sender}-message`;
-        messageDiv.textContent = text;
-        chatContainer.appendChild(messageDiv);
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
-
-    function updateLastAssistantMessage(text) {
-        let lastMessage = chatContainer.querySelector('.assistant-message:last-child');
-        if (!lastMessage) {
-            lastMessage = document.createElement('div');
-            lastMessage.className = 'message assistant-message';
-            chatContainer.appendChild(lastMessage);
-        }
-        lastMessage.textContent = text;
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
-});
 </script>
 {% endblock %}
