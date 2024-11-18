@@ -7,38 +7,20 @@
         <mxCell id="OZ7ZVYV1SHYDmix4k7CT-1" value="Route handler" style="shape=module;align=left;spacingLeft=20;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
           <mxGeometry x="570" y="110" width="120" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="sIb8TJTJuCUGwvz0RZf--2" value="Context creator" style="shape=module;align=left;spacingLeft=20;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+        <mxCell id="sIb8TJTJuCUGwvz0RZf--2" value="Context creator" style="shape=module;align=left;spacingLeft=20;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;shadow=1;" parent="1" vertex="1">
           <mxGeometry x="490" y="230" width="120" height="70" as="geometry" />
         </mxCell>
         <mxCell id="sIb8TJTJuCUGwvz0RZf--3" value="Feedback loop" style="shape=module;align=left;spacingLeft=20;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
-          <mxGeometry x="670" y="230" width="120" height="70" as="geometry" />
+          <mxGeometry x="760" y="515" width="120" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="sIb8TJTJuCUGwvz0RZf--4" value="" style="endArrow=none;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.5;exitY=0;exitDx=0;exitDy=0;edgeStyle=orthogonalEdgeStyle;" parent="1" target="sIb8TJTJuCUGwvz0RZf--2" edge="1">
-          <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="350" y="260" as="sourcePoint" />
-            <mxPoint x="1000" y="350" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="sIb8TJTJuCUGwvz0RZf--5" value="" style="endArrow=none;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;exitX=0.572;exitY=-0.017;exitDx=0;exitDy=0;exitPerimeter=0;edgeStyle=orthogonalEdgeStyle;" parent="1" source="sIb8TJTJuCUGwvz0RZf--2" target="OZ7ZVYV1SHYDmix4k7CT-1" edge="1">
-          <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="950" y="400" as="sourcePoint" />
-            <mxPoint x="1000" y="350" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="sIb8TJTJuCUGwvz0RZf--6" value="" style="endArrow=none;html=1;rounded=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0;entryDx=0;entryDy=35;entryPerimeter=0;" parent="1" source="sIb8TJTJuCUGwvz0RZf--2" target="sIb8TJTJuCUGwvz0RZf--3" edge="1">
-          <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="800" y="400" as="sourcePoint" />
-            <mxPoint x="850" y="350" as="targetPoint" />
-          </mxGeometry>
-        </mxCell>
-        <mxCell id="EBoKAFP_05bSJnqW43rb-1" value="" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
-          <mxGeometry x="870" y="320" width="60" height="80" as="geometry" />
+        <mxCell id="EBoKAFP_05bSJnqW43rb-1" value="Vektordb" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="660" y="425" width="60" height="80" as="geometry" />
         </mxCell>
         <mxCell id="EBoKAFP_05bSJnqW43rb-2" value="Ubearbeidet datagrunnlag" style="shape=document;whiteSpace=wrap;html=1;boundedLbl=1;" vertex="1" parent="1">
           <mxGeometry x="70" y="560" width="120" height="80" as="geometry" />
         </mxCell>
-        <mxCell id="EBoKAFP_05bSJnqW43rb-5" value="&lt;div&gt;&lt;br&gt;&lt;/div&gt;csv_wrangler.py" style="shape=module;align=left;spacingLeft=20;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
-          <mxGeometry x="260" y="560" width="120" height="70" as="geometry" />
+        <mxCell id="EBoKAFP_05bSJnqW43rb-5" value="&lt;div&gt;Datavask&lt;/div&gt;(csv_wrangler.py)" style="shape=module;align=left;spacingLeft=20;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="260" y="560" width="140" height="70" as="geometry" />
         </mxCell>
         <mxCell id="EBoKAFP_05bSJnqW43rb-6" value="Bruker" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
           <mxGeometry x="812" y="40" width="30" height="60" as="geometry" />
@@ -58,13 +40,27 @@
             <mxPoint x="280" y="623" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="EBoKAFP_05bSJnqW43rb-10" value="vector_db_&lt;div&gt;creator.py&lt;/div&gt;" style="shape=module;align=left;spacingLeft=20;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
-          <mxGeometry x="450" y="430" width="120" height="70" as="geometry" />
+        <mxCell id="EBoKAFP_05bSJnqW43rb-10" value="&lt;div&gt;Vektordb-oppretting&lt;/div&gt;(vector_db_&lt;div&gt;creator.py)&lt;/div&gt;" style="shape=module;align=left;spacingLeft=20;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="440" y="430" width="140" height="70" as="geometry" />
         </mxCell>
         <mxCell id="EBoKAFP_05bSJnqW43rb-11" value="" style="endArrow=classic;html=1;rounded=0;entryX=0.5;entryY=1;entryDx=0;entryDy=0;strokeColor=#4F4F4F;" edge="1" parent="1" source="EBoKAFP_05bSJnqW43rb-8" target="EBoKAFP_05bSJnqW43rb-10">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="390" y="623" as="sourcePoint" />
             <mxPoint x="457" y="622" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="EBoKAFP_05bSJnqW43rb-12" value="" style="endArrow=classic;html=1;rounded=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#4F4F4F;entryPerimeter=0;exitX=1;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="1" source="EBoKAFP_05bSJnqW43rb-10" target="EBoKAFP_05bSJnqW43rb-1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="520" y="570" as="sourcePoint" />
+            <mxPoint x="520" y="510" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="EBoKAFP_05bSJnqW43rb-13" value="Datavasking&lt;br&gt;&lt;div&gt;(csv_wrangler.py)&lt;/div&gt;" style="html=1;dropTarget=0;whiteSpace=wrap;textShadow=1;fillColor=#d5e8d4;strokeColor=#82b366;gradientColor=none;sketch=1;curveFitting=1;jiggle=2;shadow=1;" vertex="1" parent="1">
+          <mxGeometry x="240" y="340" width="180" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="EBoKAFP_05bSJnqW43rb-14" value="" style="shape=module;jettyWidth=8;jettyHeight=4;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="EBoKAFP_05bSJnqW43rb-13">
+          <mxGeometry x="1" width="20" height="20" relative="1" as="geometry">
+            <mxPoint x="-27" y="7" as="offset" />
           </mxGeometry>
         </mxCell>
       </root>
