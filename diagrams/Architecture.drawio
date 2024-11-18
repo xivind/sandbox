@@ -4,7 +4,7 @@
       <root>
         <mxCell id="0" />
         <mxCell id="1" parent="0" />
-        <mxCell id="EBoKAFP_05bSJnqW43rb-26" value="&lt;span style=&quot;color: rgb(51, 51, 51);&quot;&gt;Kjør manuelt, kun ved endring av datagrunnlag&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;shadow=0;fillColor=#eeeeee;strokeColor=#36393d;verticalAlign=top;" parent="1" vertex="1">
+        <mxCell id="EBoKAFP_05bSJnqW43rb-26" value="&lt;span style=&quot;color: rgb(51, 51, 51);&quot;&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;Kjør manuelt, kun ved endring av datagrunnlag&lt;/font&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;shadow=0;fillColor=#eeeeee;strokeColor=#36393d;verticalAlign=top;" parent="1" vertex="1">
           <mxGeometry x="10" y="580" width="680" height="120" as="geometry" />
         </mxCell>
         <mxCell id="OZ7ZVYV1SHYDmix4k7CT-1" value="Webserver&lt;br&gt;&lt;div&gt;(Uvicorn / main.py)&lt;/div&gt;" style="shape=module;align=left;spacingLeft=20;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;shadow=0;sketch=1;curveFitting=1;jiggle=2;rounded=1;" parent="1" vertex="1">
@@ -46,7 +46,7 @@
         <mxCell id="EBoKAFP_05bSJnqW43rb-10" value="&lt;div&gt;Vektordb-oppretting&lt;/div&gt;(vector_db_&lt;div&gt;creator.py)&lt;/div&gt;" style="shape=module;align=left;spacingLeft=20;align=center;verticalAlign=middle;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;shadow=0;sketch=1;curveFitting=1;jiggle=2;rounded=1;" parent="1" vertex="1">
           <mxGeometry x="530" y="610" width="140" height="70" as="geometry" />
         </mxCell>
-        <mxCell id="EBoKAFP_05bSJnqW43rb-11" value="" style="endArrow=classic;html=1;rounded=1;strokeColor=#4F4F4F;shadow=0;sketch=1;curveFitting=1;jiggle=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.75;entryDx=10;entryDy=0;entryPerimeter=0;" parent="1" source="EBoKAFP_05bSJnqW43rb-8" target="EBoKAFP_05bSJnqW43rb-10" edge="1">
+        <mxCell id="EBoKAFP_05bSJnqW43rb-11" value="" style="endArrow=classic;html=1;rounded=1;strokeColor=#4F4F4F;shadow=0;sketch=1;curveFitting=1;jiggle=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0;entryDx=0;entryDy=35;entryPerimeter=0;" parent="1" source="EBoKAFP_05bSJnqW43rb-8" target="EBoKAFP_05bSJnqW43rb-10" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="350" y="518" as="sourcePoint" />
             <mxPoint x="250" y="385" as="targetPoint" />
@@ -61,10 +61,10 @@
         <mxCell id="EBoKAFP_05bSJnqW43rb-15" value="&lt;div&gt;Chat grensesnitt&lt;/div&gt;(chat.html)" style="rounded=1;whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fillColor=#d5e8d4;strokeColor=#82b366;shadow=0;" parent="1" vertex="1">
           <mxGeometry x="750" y="235" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="EBoKAFP_05bSJnqW43rb-16" value="&lt;div&gt;Mal&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;(base.html)&lt;/span&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fillColor=#d5e8d4;strokeColor=#82b366;shadow=0;" parent="1" vertex="1">
-          <mxGeometry x="750" y="355" width="120" height="60" as="geometry" />
+        <mxCell id="EBoKAFP_05bSJnqW43rb-16" value="&lt;div&gt;Grunn-mal&lt;/div&gt;&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;(base.html)&lt;/span&gt;&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fillColor=#d5e8d4;strokeColor=#82b366;shadow=0;" parent="1" vertex="1">
+          <mxGeometry x="980" y="230" width="120" height="60" as="geometry" />
         </mxCell>
-        <mxCell id="EBoKAFP_05bSJnqW43rb-17" value="" style="endArrow=classic;html=1;rounded=1;entryX=0.5;entryY=1;entryDx=0;entryDy=0;strokeColor=#4F4F4F;shadow=0;sketch=1;curveFitting=1;jiggle=2;" parent="1" source="EBoKAFP_05bSJnqW43rb-16" target="EBoKAFP_05bSJnqW43rb-15" edge="1">
+        <mxCell id="EBoKAFP_05bSJnqW43rb-17" value="" style="endArrow=classic;html=1;rounded=1;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#4F4F4F;shadow=0;sketch=1;curveFitting=1;jiggle=2;" parent="1" source="EBoKAFP_05bSJnqW43rb-16" target="EBoKAFP_05bSJnqW43rb-15" edge="1">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
             <mxPoint x="730" y="595" as="sourcePoint" />
             <mxPoint x="810" y="595" as="targetPoint" />
@@ -96,6 +96,30 @@
         </mxCell>
         <mxCell id="EBoKAFP_05bSJnqW43rb-32" value="Feedback-db&lt;div&gt;(Sqlite)&lt;/div&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fillColor=#f8cecc;strokeColor=#b85450;shadow=0;sketch=1;curveFitting=1;jiggle=2;rounded=1;" parent="1" vertex="1">
           <mxGeometry x="365" y="460" width="110" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="sUULznQQxvdBYdon0xNT-1" value="&lt;span style=&quot;color: rgb(51, 51, 51);&quot;&gt;&lt;font style=&quot;font-size: 14px;&quot;&gt;OpenAI APIer&lt;/font&gt;&lt;/span&gt;" style="rounded=1;whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;shadow=0;fillColor=#eeeeee;strokeColor=#36393d;verticalAlign=bottom;" vertex="1" parent="1">
+          <mxGeometry x="730" y="580" width="470" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="sUULznQQxvdBYdon0xNT-3" value="&lt;div&gt;Embedding&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fillColor=#d5e8d4;strokeColor=#82b366;shadow=0;" vertex="1" parent="1">
+          <mxGeometry x="750" y="610" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sUULznQQxvdBYdon0xNT-4" value="&lt;div&gt;Completion&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fillColor=#d5e8d4;strokeColor=#82b366;shadow=0;" vertex="1" parent="1">
+          <mxGeometry x="900" y="610" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sUULznQQxvdBYdon0xNT-5" value="&lt;div&gt;Assistant&lt;/div&gt;" style="rounded=1;whiteSpace=wrap;html=1;sketch=1;hachureGap=4;jiggle=2;curveFitting=1;fontFamily=Architects Daughter;fontSource=https%3A%2F%2Ffonts.googleapis.com%2Fcss%3Ffamily%3DArchitects%2BDaughter;fillColor=#f8cecc;strokeColor=#b85450;shadow=0;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="610" width="120" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="sUULznQQxvdBYdon0xNT-6" value="" style="endArrow=classic;html=1;rounded=1;strokeColor=#4F4F4F;shadow=0;sketch=1;curveFitting=1;jiggle=2;startArrow=classic;startFill=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="EBoKAFP_05bSJnqW43rb-10" target="sUULznQQxvdBYdon0xNT-3">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="610" y="360" as="sourcePoint" />
+            <mxPoint x="610" y="310" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="sUULznQQxvdBYdon0xNT-7" value="" style="endArrow=classic;html=1;rounded=1;strokeColor=#4F4F4F;shadow=0;sketch=1;curveFitting=1;jiggle=2;startArrow=classic;startFill=1;exitX=0.5;exitY=0;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="sUULznQQxvdBYdon0xNT-4" target="sIb8TJTJuCUGwvz0RZf--2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="615" y="475" as="sourcePoint" />
+            <mxPoint x="610" y="430" as="targetPoint" />
+          </mxGeometry>
         </mxCell>
       </root>
     </mxGraphModel>
