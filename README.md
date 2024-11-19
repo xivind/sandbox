@@ -1,6 +1,6 @@
 # RAG-Chatbot 
 Overordnet løsningsskisse
 
-<img src="diagrams/konseptskisse.png"/>
+<img src="diagrams/architecture.png"/>
 
 **Tekst**
