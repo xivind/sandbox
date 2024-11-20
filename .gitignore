@@ -3,3 +3,4 @@
 .mypy_cache/*
 app/__pycache__/*
 .env
+secrets.json

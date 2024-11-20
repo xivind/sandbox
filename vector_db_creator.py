@@ -12,33 +12,26 @@ import time
 import logging
 import os
 from pathlib import Path
-from dotenv import load_dotenv
+from app.utils import read_json_file
 
-# Load environment variables
-load_dotenv()
+
+CONFIG = read_json_file('app/config.json')
+SECRETS = read_json_file('secrets.json')
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 class EmbeddingPipeline:
-    def __init__(
-        self,
-        openai_api_key: str,
-        model: str = "text-embedding-3-large",
-        chunk_size: int = 512,
-        chunk_overlap: int = 50,
-        batch_size: int = 100,
-        max_retries: int = 3,
-        retry_delay: int = 1
-    ):
-        self.client = OpenAI(api_key=openai_api_key)
-        self.model = model
-        self.chunk_size = chunk_size
-        self.chunk_overlap = chunk_overlap
-        self.batch_size = batch_size
-        self.max_retries = max_retries
-        self.retry_delay = retry_delay
-        self.tokenizer = tiktoken.encoding_for_model(model)
+    def __init__(self):
+
+        self.client = OpenAI(api_key=SECRETS['openai_api_key'])
+        self.model = CONFIG['embedding_model_name']
+        self.chunk_size = CONFIG['chunk_size']
+        self.chunk_overlap = CONFIG['chunk_overlap']
+        self.batch_size = CONFIG['batch_size']
+        self.max_retries = 3
+        self.retry_delay = 1
+        self.tokenizer = tiktoken.encoding_for_model(self.model)
         
     def count_tokens(self, text: str) -> int:
         """Count the number of tokens in a text string."""
@@ -200,10 +193,8 @@ class EmbeddingPipeline:
         metadatas = []
         for i, item in enumerate(data):
             # Start with basic metadata that we always have
-            metadata = {
-                'chunk_index': str(i),
-                'document_type': 'text'
-            }
+            metadata = {'chunk_index': str(i),
+                        'document_type': 'text'}
             
             # Add source information if available
             if 'source' in item:
@@ -221,25 +212,18 @@ class EmbeddingPipeline:
             metadatas.append(metadata)
             
         # Add to collection
-        collection.add(
-            ids=ids,
-            embeddings=embeddings,
-            documents=documents,
-            metadatas=metadatas
-        )
+        collection.add(ids=ids,
+                       embeddings=embeddings,
+                       documents=documents,
+                       metadatas=metadatas)
         
         logger.info(f"Saved {len(data)} documents to ChromaDB collection '{collection_name}' with metadata")
         
         logger.info(f"Saved {len(data)} documents to ChromaDB collection '{collection_name}'")
 
-# Usage example:
 if __name__ == "__main__":
     # Initialize the pipeline
-    pipeline = EmbeddingPipeline(
-        openai_api_key=os.getenv("OPENAI_API_KEY"),
-        chunk_size=512,
-        chunk_overlap=50
-    )
+    pipeline = EmbeddingPipeline()
     
     # Process CSV data
     csv_results = pipeline.process_csv(
@@ -261,12 +245,10 @@ if __name__ == "__main__":
     )
     
     # Process text files
-    text_results = pipeline.process_text_files(
-        directory="./raw_data"
-    )
+    #text_results = pipeline.process_text_files(directory="./raw_data")
     
     # Combine results
-    all_results = csv_results + text_results
+    #all_results = csv_results + text_results
     
     # Save to ChromaDB
-    pipeline.save_to_chromadb(all_results, "reguleringsplan_cleaned")
+    pipeline.save_to_chromadb(csv_results, "reguleringsplan_cleaned")
