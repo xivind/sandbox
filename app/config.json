@@ -1,12 +1,12 @@
 {
     "chroma_db_path": "./chroma_db",
-    "collection_name": "reguleringsplan_cleaned",
-    "completion_model_name": "GPT-3.5 Turbo",
+    "collection_name": "reguleringsplan_enhanced",
+    "completion_model_name": "gpt-4o",
     "embedding_model_name": "text-embedding-3-large",
-    "chunk_size": 256,
-    "chunk_overlap": 25,
+    "chunk_size": 1024,
+    "chunk_overlap": 100,
     "batch_size": 50,
     "max_tokens": 2000,
     "temperature": 0.5,
-    "top_k": 20
+    "top_k": 40
 }
