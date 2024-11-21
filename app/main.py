@@ -5,10 +5,8 @@ from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import StreamingResponse
 from app import chat
-from .config import get_settings
 
 app = FastAPI()
-settings = get_settings()
 
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
