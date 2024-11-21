@@ -227,7 +227,7 @@ if __name__ == "__main__":
     
     # Process CSV data
     csv_results = pipeline.process_csv(
-        csv_path="raw_data/reguleringsplan_cleaned.csv",
+        csv_path="raw_data/reguleringsplan_enhanced.csv",
         text_columns=['informasjonstype',
                       'navn',
                       'ingress',
@@ -240,8 +240,12 @@ if __name__ == "__main__":
                       'ansvarlig',
                       'dokumenttype',
                       'referanse_lenketekst',
-                      'referanse_url'],
-        encoding='latin-1'                      
+                      'referanse_url',
+                      'search_text',
+                      'has_url',
+                      'content_type',
+                      'keywords'],
+        encoding='utf-8'
     )
     
     # Process text files
