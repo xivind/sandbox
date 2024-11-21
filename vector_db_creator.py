@@ -251,4 +251,4 @@ if __name__ == "__main__":
     #all_results = csv_results + text_results
     
     # Save to ChromaDB
-    pipeline.save_to_chromadb(csv_results, "reguleringsplan_cleaned")
+    pipeline.save_to_chromadb(csv_results, CONFIG['collection_name'])
