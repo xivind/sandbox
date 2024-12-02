@@ -7,30 +7,35 @@ import tiktoken
 from icecream import ic
 from dotenv import load_dotenv
 import json
-import asyncio
 from .utils import read_json_file
 
 CONFIG = read_json_file('app/config.json')
 SECRETS = read_json_file('secrets.json')
 
+# Initialize OpenAI API client
 client = AsyncOpenAI(api_key=SECRETS['openai_api_key'])
+
+# Initialize ChromaDB
 chroma_client = chromadb.PersistentClient(path=CONFIG['chroma_db_path'])
 collection = chroma_client.get_collection(CONFIG['collection_name'])
 
-# Store thread and assistant IDs
-THREAD_ID = None
-ASSISTANT_ID = None
-
 async def get_relevant_context(query: str) -> str:
+    """
+    Retrieve relevant context from the vector database
+    """
+    # Get embeddings for the query
     response = await client.embeddings.create(
         model=CONFIG['embedding_model_name'],
         input=query)
     
     query_embedding = response.data[0].embedding
+
+    # Query ChromaDB
     results = collection.query(
         query_embeddings=[query_embedding],
         n_results=CONFIG['top_k'])
-    
+
+    # Combine relevant chunks
     contexts = results['documents'][0]
     print(len(contexts))
     for item in contexts:
@@ -38,15 +43,11 @@ async def get_relevant_context(query: str) -> str:
         print(f"{item} \n")
     return "\n\n---\n\n".join(contexts)
 
-async def ensure_assistant():
-    global ASSISTANT_ID
-    if ASSISTANT_ID:
-        return ASSISTANT_ID
-
-    # Move the prompt content into assistant instructions
-    assistant = await client.beta.assistants.create(
-        name="Health Sector Digitalization Expert",
-        instructions=f"""Oppfør deg som en ekspert på digitalisering innen helse- og omsorgssektoren i Norge.
+async def generate_response(query: str, context: str) -> AsyncGenerator[str, None]:
+    """
+    Generate a streaming response using the OpenAI API
+    """
+    prompt = f"""Oppfør deg som en ekspert på digitalisering innen helse- og omsorgssektoren i Norge.
     Din oppgave er å veilede om krav og anbefalinger som gjelder digitalisering i helse- og omsorgssektoren i Norge.
     Du skal legge spesielt vekt på datagrunnlaget som inngår i denne prompten, men du kan også støtte deg på informasjon fra internett.
     I så fall skal du legge særlig vekt på informasjon fra ehelse.no, hdir.no og lovdata.no. Du skal gi så fullstendige svar som mulig.
@@ -150,52 +151,29 @@ Status – Utfasing: Krav eller anbefaling som er besluttet utfaset.
 Teknisk grensesnitt: Et teknisk grensesnitt som gjør det mulig for maskiner og løsninger å kommunisere. Slike grensesnitt vil være realiseringer av grensesnittspesifikasjoner og kan være beskrevet som standarder.
 Teknisk samhandlingsform: Beskrivelse av hvordan samhandling skal løses teknisk. Den tekniske samhandlingsformen kan understøtte en eller flere organisatoriske samhandlingsformer. Les mer om tekniske samhandlingsformer.
 Terminologi: En systematisk samling av begreper som brukes innenfor et fagfelt. En terminologi er en type kodeverk. En terminologi er utformet med tanke på at begrepene skal ha relasjoner til hverandre. Dette betyr at hvert begrep er koblet til andre relaterte begreper.
-Veileder (bransjenorm): Gir utdypende tolkninger om kravene i Normens hoveddokument og utdypende anbefalinger om hvordan kravene kan oppfylles""",
-        model="gpt-4-0125-preview",
-    )
-    ASSISTANT_ID = assistant.id
-    return ASSISTANT_ID
+Veileder (bransjenorm): Gir utdypende tolkninger om kravene i Normens hoveddokument og utdypende anbefalinger om hvordan kravene kan oppfylles
+
+    Context: {context}
+
+    Question: {query}
+
+    Answer:"""
+
+    response = await client.chat.completions.create(
+        model=CONFIG['completion_model_name'],
+        messages=[{"role": "user", "content": prompt}],
+        temperature=CONFIG['temperature'],
+        max_tokens=CONFIG['max_tokens'],
+        stream=True)
+
+    async for chunk in response:
+        if chunk.choices[0].delta.content is not None:
+            yield chunk.choices[0].delta.content
 
 async def get_streaming_response(query: str) -> AsyncGenerator[str, None]:
-    global THREAD_ID
-    
-    # Get or create thread
-    if not THREAD_ID:
-        thread = await client.beta.threads.create()
-        THREAD_ID = thread.id
-    
-    # Get context and add message
+    """
+    Main function to handle the chat workflow
+    """
     context = await get_relevant_context(query)
-    await client.beta.threads.messages.create(
-        thread_id=THREAD_ID,
-        role="user",
-        content=f"Context: {context}\n\nQuestion: {query}"
-    )
-    
-    # Run assistant
-    assistant_id = await ensure_assistant()
-    run = await client.beta.threads.runs.create(
-        thread_id=THREAD_ID,
-        assistant_id=assistant_id
-    )
-    
-    # Stream response
-    while True:
-        run_status = await client.beta.threads.runs.retrieve(
-            thread_id=THREAD_ID,
-            run_id=run.id
-        )
-        if run_status.status == 'completed':
-            messages = await client.beta.threads.messages.list(
-                thread_id=THREAD_ID
-            )
-            latest_message = messages.data[0]
-            if latest_message.role == "assistant":
-                text = latest_message.content[0].text.value
-                for char in text:
-                    yield char
-            break
-        elif run_status.status in ['failed', 'cancelled']:
-            yield f"Error: Assistant run {run_status.status}"
-            break
-        await asyncio.sleep(0.5)
+    async for token in generate_response(query, context):
+        yield token
