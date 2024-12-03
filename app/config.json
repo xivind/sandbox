@@ -1,7 +1,7 @@
 {
     "chroma_db_path": "./chroma_db",
     "collection_name": "reguleringsplan_enhanced",
-    "completion_model_name": "gpt-4o",
+    "completion_model_name": "gpt-4o-mini-2024-07-18",
     "embedding_model_name": "text-embedding-3-large",
     "chunk_size": 1024,
     "chunk_overlap": 100,
