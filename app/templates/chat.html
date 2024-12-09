@@ -4,12 +4,7 @@
 
 {% block extra_css %}
 <style>
-    /* Chat container and basic message styling */
-    .chat-container {
-        height: calc(100vh - 200px);
-        overflow-y: auto;
-    }
-
+    /* Message styling for chat bubbles */
     .message {
         margin: 10px;
         padding: 10px;
@@ -25,10 +20,30 @@
         background-color: #6896c0;
         margin-right: 20%;
         color: #fff;
-        white-space: pre-line;  /* This helps preserve line breaks */
+        white-space: pre-line;
     }
 
-    /* Typing indicator */
+    /* Card height styling for side tiles */
+    .card {
+        height: calc((100vh - 200px)/2 - 10px);
+    }
+    
+    /* Chat card should be taller to accommodate the input field */
+    .col-md-9 .card {
+        height: calc(100vh - 250px);  /* Increased height */
+    }
+    
+    /* Messages container inside chat card */
+    .chat-messages {
+        height: calc(100vh - 300px);  /* Adjusted to match new card height */
+        overflow-y: auto;
+    }
+    
+    .card-body {
+        overflow-y: auto;
+    }
+
+    /* Typing indicator animation */
     .typing-indicator {
         margin: 10px;
     }
@@ -62,7 +77,7 @@
         30% { transform: translateY(-6px); }
     }
 
-    /* Markdown styling */
+    /* Markdown content styling in messages */
     .assistant-message h1 {
         font-size: 1.8em;
         margin: 1em 0 0.5em 0;
@@ -157,133 +172,158 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mt-4">
+<div class="container-fluid mt-4 px-4">
     <h1 class="text-center mb-4">KI-demonstrator reguleringsplan for e-helse</h1>
     
-    <div class="chat-container border rounded p-3 mb-3 shadow" id="chatContainer">
-        <!-- Messages will be inserted here -->
-    </div>
+    <div class="row">
+        <div class="col-md-9">
+            <!-- Main Chat Card -->
+            <div class="card mb-3 shadow">
+                <div class="card-header bg-primary-subtle fw-bold fs-5">
+                    Chat
+                </div>
+                <div class="card-body chat-messages p-3" id="chatContainer">
+                    <!-- Messages will be inserted here -->
+                </div>
+            </div>
 
-    <div id="typingIndicator" class="typing-indicator" style="display: none;">
-        <div class="px-3 py-2 rounded shadow-sm d-inline-flex align-items-center">
-            <small class="text-muted me-2">Reguleringsplanen skriver</small>
-            <div class="typing-dots">
-                <span></span>
-                <span></span>
-                <span></span>
+            <div id="typingIndicator" class="typing-indicator" style="display: none;">
+                <div class="px-3 py-2 rounded shadow-sm d-inline-flex align-items-center">
+                    <small class="text-muted me-2 fw-bold">Reguleringsplanen skriver</small>
+                    <div class="typing-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </div>
+            
+            <form id="chatForm" class="mt-3">
+                <div class="input-group shadow">
+                    <input type="text" id="userInput" class="form-control me-2" placeholder="Type your question..." required>
+                    <button type="submit" class="btn btn-success">Send</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="col-md-3">
+            <!-- Settings Card -->
+            <div class="card mb-4 shadow">
+                <div class="card-header bg-primary-subtle fw-bold fs-5">
+                    Innstillinger
+                </div>
+                <div class="card-body">
+                    <!-- Content for settings will go here -->
+                </div>
+            </div>
+            
+            <!-- Statistics Card -->
+            <div class="card mb-4 shadow">
+                <div class="card-header bg-primary-subtle fw-bold fs-5">
+                    Statistikk
+                </div>
+                <div class="card-body">
+                    <!-- Content for statistics will go here -->
+                </div>
             </div>
         </div>
     </div>
-    
-    <form id="chatForm" class="mt-3">
-        <div class="input-group shadow">
-            <input type="text" id="userInput" class="form-control" placeholder="Type your question..." required>
-            <button type="submit" class="btn btn-primary">Send</button>
-        </div>
-    </form>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
- document.addEventListener('DOMContentLoaded', function() {
-    // Configure marked options
-    marked.setOptions({
-        gfm: true,              // GitHub Flavored Markdown
-        breaks: true,           // Add <br> on single line breaks
-        headerIds: true,        // Add ids to headers
-        mangle: false,          // Don't escape HTML
-        pedantic: false,        // Don't be too strict with markdown spec
-        sanitize: false,        // Allow HTML in markdown
-    });
-    
-    const chatContainer = document.getElementById('chatContainer');
-    const chatForm = document.getElementById('chatForm');
-    const userInput = document.getElementById('userInput');
-    const typingIndicator = document.getElementById('typingIndicator');
-
-    marked.setOptions({
-        breaks: true,
-        gfm: true
-    });
-
-    chatForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
+    document.addEventListener('DOMContentLoaded', function() {
+        // Configure marked options for Markdown parsing
+        marked.setOptions({
+            gfm: true,
+            breaks: true,
+            headerIds: true,
+            mangle: false,
+            pedantic: false,
+            sanitize: false,
+        });
         
-        const query = userInput.value.trim();
-        if (!query) return;
+        const chatContainer = document.getElementById('chatContainer');
+        const chatForm = document.getElementById('chatForm');
+        const userInput = document.getElementById('userInput');
+        const typingIndicator = document.getElementById('typingIndicator');
 
-        appendMessage(query, 'user');
-        userInput.value = '';
-        typingIndicator.style.display = 'block';
+        chatForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const query = userInput.value.trim();
+            if (!query) return;
 
-        try {
-            const response = await fetch('/chat', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ query: query })
-            });
+            appendMessage(query, 'user');
+            userInput.value = '';
+            typingIndicator.style.display = 'block';
 
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-            let assistantResponse = '';
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ query: query })
+                });
 
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
+                const reader = response.body.getReader();
+                const decoder = new TextDecoder();
+                let assistantResponse = '';
 
-                const text = decoder.decode(value);
-                const lines = text.split('\n');
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
 
-                for (const line of lines) {
-                    if (line.startsWith('data: ')) {
-                        const token = line.slice(6);
-                        assistantResponse += token;
-                        updateLastAssistantMessage(assistantResponse);
+                    const text = decoder.decode(value);
+                    const lines = text.split('\n');
+
+                    for (const line of lines) {
+                        if (line.startsWith('data: ')) {
+                            const token = line.slice(6);
+                            assistantResponse += token;
+                            updateLastAssistantMessage(assistantResponse);
+                        }
                     }
                 }
+            } catch (error) {
+                console.error('Error:', error);
+                appendMessage('Sorry, there was an error processing your request.', 'assistant');
+            } finally {
+                typingIndicator.style.display = 'none';
             }
-        } catch (error) {
-            console.error('Error:', error);
-            appendMessage('Sorry, there was an error processing your request.', 'assistant');
-        } finally {
-            typingIndicator.style.display = 'none';
-        }
-    });
+        });
 
-    function appendMessage(text, sender) {
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${sender}-message`;
-        
-        if (sender === 'assistant') {
-            messageDiv.innerHTML = marked.parse(text);
-            // Apply syntax highlighting to code blocks if any
-            messageDiv.querySelectorAll('pre code').forEach((block) => {
+        function appendMessage(text, sender) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${sender}-message`;
+            
+            if (sender === 'assistant') {
+                messageDiv.innerHTML = marked.parse(text);
+                messageDiv.querySelectorAll('pre code').forEach((block) => {
+                    hljs.highlightBlock(block);
+                });
+            } else {
+                messageDiv.textContent = text;
+            }
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function updateLastAssistantMessage(text) {
+            let lastMessage = chatContainer.querySelector('.assistant-message:last-child');
+            if (!lastMessage) {
+                lastMessage = document.createElement('div');
+                lastMessage.className = 'message assistant-message';
+                chatContainer.appendChild(lastMessage);
+            }
+            lastMessage.innerHTML = marked.parse(text);
+            lastMessage.querySelectorAll('pre code').forEach((block) => {
                 hljs.highlightBlock(block);
             });
-        } else {
-            messageDiv.textContent = text;
+            chatContainer.scrollTop = chatContainer.scrollHeight;
         }
-        chatContainer.appendChild(messageDiv);
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
-
-    function updateLastAssistantMessage(text) {
-        let lastMessage = chatContainer.querySelector('.assistant-message:last-child');
-        if (!lastMessage) {
-            lastMessage = document.createElement('div');
-            lastMessage.className = 'message assistant-message';
-            chatContainer.appendChild(lastMessage);
-        }
-        lastMessage.innerHTML = marked.parse(text);
-        // Apply syntax highlighting to code blocks if any
-        lastMessage.querySelectorAll('pre code').forEach((block) => {
-            hljs.highlightBlock(block);
-        });
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
-});
+    });
 </script>
 {% endblock %}
