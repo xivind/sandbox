@@ -23,21 +23,21 @@ collection = chroma_client.get_collection(CONFIG['collection_name'])
 THREAD_ID = None
 ASSISTANT_ID = None
 
-async def get_relevant_context(query: str) -> str: #Check why this function is different frmo same function in assistant script
+async def get_relevant_context(query: str) -> str: #Check why this function is different from same function in assistant script
     """
     Retrieve relevant context from the vector database
     """
     # Get embeddings for the query
     response = await client.embeddings.create(
-        model=CONFIG['embedding_model_name'],
-        input=query)
+        model = CONFIG['embedding_model_name'],
+        input = query)
     
     query_embedding = response.data[0].embedding
 
     # Query ChromaDB
     results = collection.query(
-        query_embeddings=[query_embedding],
-        n_results=CONFIG['top_k'])
+        query_embeddings = [query_embedding],
+        n_results = CONFIG['top_k'])
 
     # Combine relevant chunks
     contexts = results['documents'][0]
@@ -58,11 +58,9 @@ async def create_assistant():
       name="Digitaliseringsekspert i helse- og omsorgssektoren",
       instructions="""Du er en ekspert på digitalisering innen helse- og omsorgssektoren i Norge. 
       Baser svarene dine primært på konteksten som gis.
-      
-      
-      
+
       Svar skal være fullstendige og inkludere relevante lover, forskrifter og fortolkninger.""",
-      model="gpt-4o-mini-2024-07-18"
+      model="gpt-4o-mini-2024-07-18" #Read from file instead
   )
   ASSISTANT_ID = assistant.id
   return ASSISTANT_ID
@@ -73,30 +71,26 @@ async def generate_response(query: str, context: str) -> AsyncGenerator[str, Non
     for debugging purposes.
     """
     try:
-        global THREAD_ID, IS_FIRST_MESSAGE
+        global THREAD_ID
         
         print("\nDebug: Starting generate_response function")
         
+        # Create thread if it doesn't exist
         if not THREAD_ID:
             thread = await client.beta.threads.create()
             THREAD_ID = thread.id
-            IS_FIRST_MESSAGE = True
             print(f"Debug: Created new thread with ID: {THREAD_ID}")
         else:
             print(f"Debug: Using existing thread with ID: {THREAD_ID}")
         
-        # Only get full context for first message
-        content = query
-        if IS_FIRST_MESSAGE:
-            content = f"Context:\n{context}\n\nQuestion: {query}"
-            IS_FIRST_MESSAGE = False
-            print("Debug: Added context to first message")
+        # Always combine context with query for better responses
+        enriched_query = f"Context:\n{context}\n\nQuestion: {query}"
         
         # Create the message in the thread
         await client.beta.threads.messages.create(
-            thread_id=THREAD_ID,
-            role="user",
-            content=content
+            thread_id = THREAD_ID,
+            role = "user",
+            content = enriched_query
         )
         print("Debug: Created message in thread")
         
@@ -106,9 +100,9 @@ async def generate_response(query: str, context: str) -> AsyncGenerator[str, Non
         
         print("Debug: Starting stream...")
         async with client.beta.threads.runs.stream(
-            thread_id=THREAD_ID,
-            assistant_id=assistant_id,
-            instructions="""
+            thread_id = THREAD_ID,
+            assistant_id = assistant_id,
+            instructions = """
                     IMPORTANT ABOUT FORMATTING:
 
             You should respond with HTML formatting. Use the following HTML elements:
@@ -151,7 +145,7 @@ async def generate_response(query: str, context: str) -> AsyncGenerator[str, Non
                     print(f"Debug: Delta content: {chunk.data}")
                     if hasattr(chunk.data, 'delta') and chunk.data.delta:
                         if hasattr(chunk.data.delta, 'text'):
-                            content = chunk.data.delta.text
+                            content = chunk.data.delta.text #Whats the problem here
                             print(f"Debug: Yielding content: {content}")
                             yield content
                         elif hasattr(chunk.data.delta, 'content'):
