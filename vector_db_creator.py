@@ -227,7 +227,7 @@ if __name__ == "__main__":
     
     # Process CSV data
     csv_results = pipeline.process_csv(
-        csv_path="raw_data/reguleringsplan_enhanced.csv",
+        csv_path="raw_data/reguleringsplan_enhanced_extra_metadata.csv",
         text_columns=['informasjonstype',
                       'navn',
                       'ingress',
