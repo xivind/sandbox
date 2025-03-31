@@ -4,7 +4,6 @@ from typing import AsyncGenerator
 import chromadb
 from openai import AsyncOpenAI
 import tiktoken
-import asyncio
 from icecream import ic
 from dotenv import load_dotenv
 import json
@@ -20,24 +19,21 @@ client = AsyncOpenAI(api_key=SECRETS['openai_api_key'])
 chroma_client = chromadb.PersistentClient(path=CONFIG['chroma_db_path'])
 collection = chroma_client.get_collection(CONFIG['collection_name'])
 
-THREAD_ID = None
-ASSISTANT_ID = None
-
-async def get_relevant_context(query: str) -> str: #Check why this function is different from same function in assistant script
+async def get_relevant_context(query: str) -> str:
     """
     Retrieve relevant context from the vector database
     """
     # Get embeddings for the query
     response = await client.embeddings.create(
-        model = CONFIG['embedding_model_name'],
-        input = query)
+        model=CONFIG['embedding_model_name'],
+        input=query)
     
     query_embedding = response.data[0].embedding
 
     # Query ChromaDB
     results = collection.query(
-        query_embeddings = [query_embedding],
-        n_results = CONFIG['top_k'])
+        query_embeddings=[query_embedding],
+        n_results=CONFIG['top_k'])
 
     # Combine relevant chunks
     contexts = results['documents'][0]
@@ -47,16 +43,11 @@ async def get_relevant_context(query: str) -> str: #Check why this function is d
         print(f"{item} \n")
     return "\n\n---\n\n".join(contexts)
 
-async def create_assistant():
-  global ASSISTANT_ID
-  
-  if ASSISTANT_ID:
-    return ASSISTANT_ID
-
-  #Replace assistant instruction with read from file
-  assistant = await client.beta.assistants.create(
-      name="Digitaliseringsekspert i helse- og omsorgssektoren",
-      instructions="""Oppfør deg som en ekspert på digitalisering innen helse- og omsorgssektoren i Norge.
+async def generate_response(query: str, context: str) -> AsyncGenerator[str, None]:
+    """
+    Generate a streaming response using the OpenAI API
+    """
+    prompt = f"""Oppfør deg som en ekspert på digitalisering innen helse- og omsorgssektoren i Norge.
     Din oppgave er å veilede om krav og anbefalinger som gjelder digitalisering i helse- og omsorgssektoren i Norge.
     Du skal legge spesielt vekt på datagrunnlaget som inngår i denne prompten, men du kan også støtte deg på informasjon fra internett.
     I så fall skal du legge særlig vekt på informasjon fra ehelse.no, hdir.no og lovdata.no. Du skal gi så fullstendige svar som mulig.
@@ -67,6 +58,33 @@ async def create_assistant():
     - liste opp alle elementer du finner, ikke bare de mest åpenbare
     - gruppere elementene på en logisk måte
     - forklare hvis det er relasjoner mellom elementene
+
+    VIKTIG OM FORMATTERING:
+    Du skal svare med HTML-formattering. Bruk følgende HTML-elementer:
+    - <h1> for hovedoverskrift
+    - <h2> for underoverskrifter
+    - <p> for tekstavsnitt
+    - <ul> og <li> for punktlister
+    - <ol> og <li> for nummererte lister
+    - <a href="url"> for lenker
+    - <strong> for uthevet tekst
+    - <br> for linjeskift der det trengs
+
+    VIKTIG: 
+    - IKKE start svaret med ```html
+    - IKKE avslutt svaret med ``
+    - Bruk komplette HTML-tags (<ul><li>punkt</li></ul>, ikke bare 'ul>')
+    - IKKE skriv 'ul>' separat
+    - IKKE skriv 'ol>' separat
+
+    Eksempel på formattering:
+    <h1>Hovedtittel</h1>
+    <p>Et avsnitt med tekst som kan inneholde <strong>uthevet tekst</strong> og <a href="https://ehelse.no">lenker</a>.</p>
+    <h2>Undertittel</h2>
+    <ul>
+        <li>Punkt 1</li>
+        <li>Punkt 2</li>
+    </ul>
 
     Om informasjonsmodellen / metamodellen
 Reguleringsplanen inneholder krav og anbefalinger som er strukturert i henhold til en informasjonsmodell. Modellen er delt inn i henhold til rammeverk for digital samhandling i juridiske, organisatoriske, semantiske og tekniske krav og anbefalinger. Informasjonsmodellen inneholder også elementer som reguleringsplanen kan utvides med senere etter behov. Samlet sett beskriver metamodellen de ulike nivåene av samhandling i eller på tvers av virksomheter, fra juridiske rammer til teknisk implementering. Metamodellen beskriver ulike typer samhandlingsevne, delt inn i fire hovedkategorier: 
@@ -135,112 +153,27 @@ Teknisk samhandlingsform: Beskrivelse av hvordan samhandling skal løses teknisk
 Terminologi: En systematisk samling av begreper som brukes innenfor et fagfelt. En terminologi er en type kodeverk. En terminologi er utformet med tanke på at begrepene skal ha relasjoner til hverandre. Dette betyr at hvert begrep er koblet til andre relaterte begreper.
 Veileder (bransjenorm): Gir utdypende tolkninger om kravene i Normens hoveddokument og utdypende anbefalinger om hvordan kravene kan oppfylles
 
+    Context: {context}
 
-      Svar skal være fullstendige og inkludere relevante lover, forskrifter og fortolkninger.""",
-      model="gpt-4o-mini-2024-07-18" #Read from file instead
-  )
-  ASSISTANT_ID = assistant.id
-  return ASSISTANT_ID
+    Question: {query}
 
-async def generate_response(query: str, context: str) -> AsyncGenerator[str, None]:
-    """
-    Generate a streaming response using the OpenAI API with added console logging
-    for debugging purposes.
-    """
-    try:
-        global THREAD_ID
-        
-        print("\nDebug: Starting generate_response function")
-        
-        # Create thread if it doesn't exist
-        if not THREAD_ID:
-            thread = await client.beta.threads.create()
-            THREAD_ID = thread.id
-            print(f"Debug: Created new thread with ID: {THREAD_ID}")
-        else:
-            print(f"Debug: Using existing thread with ID: {THREAD_ID}")
-        
-        # Always combine context with query for better responses
-        enriched_query = f"Context:\n{context}\n\nQuestion: {query}"
-        
-        # Create the message in the thread
-        await client.beta.threads.messages.create(
-            thread_id = THREAD_ID,
-            role = "user",
-            content = enriched_query
-        )
-        print("Debug: Created message in thread")
-        
-        # Get the assistant ID
-        assistant_id = await create_assistant()
-        print(f"Debug: Got assistant ID: {assistant_id}")
-        
-        print("Debug: Starting stream...")
-        async with client.beta.threads.runs.stream(
-            thread_id = THREAD_ID,
-            assistant_id = assistant_id,
-            instructions = """
-                    IMPORTANT ABOUT FORMATTING:
+    Answer:"""
 
-            You should respond with HTML formatting. Use the following HTML elements:
-            - <h1> for main heading 
-            - <h2> for subheadings
-            - <p> for paragraphs
-            - <ul> and <li> for bullet lists
-            - <ol> and <li> for numbered lists
-            - <a href="url"> for links
-            - <strong> for emphasized text
-            - <br> for line breaks where needed
+    response = await client.chat.completions.create(
+        model=CONFIG['completion_model_name'],
+        messages=[{"role": "user", "content": prompt}],
+        temperature=CONFIG['temperature'],
+        max_tokens=CONFIG['max_tokens'],
+        stream=True)
 
-            IMPORTANT:
-            - DO NOT start the answer with ```html
-            - DO NOT end the answer with ``
-            - Use complete HTML tags (<ul><li>point</li></ul>, not just 'ul>')
-            - DO NOT write 'ul>' separately  
-            - DO NOT write 'ol>' separately
-
-            Formatting example:
-            <h1>Main Title</h1>
-            <p>A paragraph of text that can contain <strong>emphasized text</strong> and <a href="https://ehelse.no">links</a>.</p>
-            <h2>Subtitle</h2>
-            <ul>
-            <li>Point 1</li>
-            <li>Point 2</li>
-            </ul>
-            """
-        ) as stream:
-            print("Debug: Stream created, waiting for chunks...")
-            async for chunk in stream:
-                print(f"Debug: Received chunk type: {type(chunk)}")
-                print(f"Debug: Event type: {chunk.event}")
-                
-                # Let's add more detailed debugging of the chunk structure
-                print(f"Debug: Full chunk data: {chunk}")
-                
-                if chunk.event == "thread.message.delta":
-                    # Add debugging for the delta structure
-                    print(f"Debug: Delta content: {chunk.data}")
-                    if hasattr(chunk.data, 'delta') and chunk.data.delta:
-                        if hasattr(chunk.data.delta, 'text'):
-                            content = chunk.data.delta.text #Whats the problem here
-                            print(f"Debug: Yielding content: {content}")
-                            yield content
-                        elif hasattr(chunk.data.delta, 'content'):
-                            for content_block in chunk.data.delta.content:
-                                if content_block.type == 'text':
-                                    print(f"Debug: Yielding content block: {content_block.text.value}")
-                                    yield content_block.text.value
-
-    except Exception as e:
-        error_message = f"Error in generate_response: {str(e)}"
-        print(f"Debug: {error_message}")
-        yield error_message
+    async for chunk in response:
+        if chunk.choices[0].delta.content is not None:
+            yield chunk.choices[0].delta.content
 
 async def get_streaming_response(query: str) -> AsyncGenerator[str, None]:
-  """
-  Main function to handle the chat workflow
-  """
-  #context = await get_relevant_context(query)
-  context = ""
-  async for token in generate_response(query, context):
-      yield token
+    """
+    Main function to handle the chat workflow
+    """
+    context = await get_relevant_context(query)
+    async for token in generate_response(query, context):
+        yield token
